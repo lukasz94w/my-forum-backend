@@ -7,7 +7,6 @@ import pl.lukasz94w.myforum.dtoConverter.DtoConverter;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.repository.PostRepository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,14 +25,9 @@ public class PostService {
         return DtoConverter.convertPostToPostDto(post);
     }
 
-    public void deletePostById(final Long id) {
-        postRepository.deleteById(id);
-    }
-
-    public List<PostDto> getAllPosts() {
-        Collection<Post> posts = postRepository.findAll();
-
-        return posts.stream()
+    public List<PostDto> getPostsByTopicId(Long id) {
+        return postRepository.findAllByTopicId(id).
+                stream()
                 .map(DtoConverter::convertPostToPostDto)
                 .collect(Collectors.toList());
     }

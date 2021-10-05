@@ -3,6 +3,7 @@ package pl.lukasz94w.myforum.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import pl.lukasz94w.myforum.model.Topic;
 
 @Getter
 @Setter
@@ -10,7 +11,7 @@ import lombok.Setter;
 public class PostDto {
     private Long id;
 
-    private String title;
-
     private String content;
+
+    private Topic topic;
 }
