@@ -20,7 +20,7 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public PostDto createPost(Post post) {
+    public PostDto addPost(Post post) {
         postRepository.save(post);
         return DtoConverter.convertPostToPostDto(post);
     }

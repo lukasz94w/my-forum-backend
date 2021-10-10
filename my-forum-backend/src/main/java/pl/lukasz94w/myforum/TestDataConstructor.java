@@ -28,16 +28,16 @@ public class TestDataConstructor {
         Topic topic1 = new Topic("Kupno telewizora za 2000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.");
         topicService.createTopic(topic1);
 
-        postService.createPost(new Post("To jest pierwszy komentarz do posta nr 1", topic1));
-        postService.createPost(new Post("To jest drugi komentarz do posta nr 1", topic1));
-        postService.createPost(new Post("To jest trzeci komentarz do posta nr 1", topic1));
+        postService.addPost(new Post("To jest pierwszy komentarz do posta nr 1", topic1));
+        postService.addPost(new Post("To jest drugi komentarz do posta nr 1", topic1));
+        postService.addPost(new Post("To jest trzeci komentarz do posta nr 1", topic1));
 
         Topic topic2 = new Topic("Kupno telewizora za 5000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.");
         topicService.createTopic(topic2);
 
-        postService.createPost(new Post("To jest pierwszy komentarz do posta nr 2", topic2));
-        postService.createPost(new Post("To jest drugi komentarz do posta nr 2", topic2));
-        postService.createPost(new Post("To jest trzeci komentarz do posta nr 2", topic2));
+        postService.addPost(new Post("To jest pierwszy komentarz do posta nr 2", topic2));
+        postService.addPost(new Post("To jest drugi komentarz do posta nr 2", topic2));
+        postService.addPost(new Post("To jest trzeci komentarz do posta nr 2", topic2));
 
         topicService.createTopic(new Topic("Kupno telewizora za 2000zl", "Content 1"));
         topicService.createTopic(new Topic("Pomoc w wyborze roweru na komunię", "Content 2"));

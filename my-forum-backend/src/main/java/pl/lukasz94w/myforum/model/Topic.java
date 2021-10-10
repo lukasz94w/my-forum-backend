@@ -21,7 +21,7 @@ public class Topic {
 
     @NotNull
     @NonNull
-    @Size(min = 5, max = 500)
+    @Size(min = 5, max = 100)
     private String title;
 
     @NotNull
