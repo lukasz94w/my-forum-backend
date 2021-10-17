@@ -3,6 +3,7 @@ package pl.lukasz94w.myforum.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.lukasz94w.myforum.dto.PostDto;
 import pl.lukasz94w.myforum.model.Post;
@@ -21,6 +22,7 @@ public class PostController {
         this.postService = postService;
     }
 
+    @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
     @PostMapping("/addPost")
     public ResponseEntity<PostDto> addPost(@RequestBody Post post) {
         return new ResponseEntity<>(this.postService.addPost(post), HttpStatus.CREATED);

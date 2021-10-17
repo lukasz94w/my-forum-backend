@@ -1,31 +1,39 @@
 package pl.lukasz94w.myforum.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Entity
-@Data
 @NoArgsConstructor
+@Getter
 @RequiredArgsConstructor
-@AllArgsConstructor
-public class Topic {
+@Table(name = "topics")
+public final class Topic {
 
     @Id
     @GeneratedValue
     private Long id;
 
-    @NotNull
     @NonNull
+    @NotBlank
     @Size(min = 5, max = 100)
     private String title;
 
-    @NotNull
     @NonNull
+    @NotBlank
     @Size(min = 5, max = 500)
     private String content;
+
+    @ManyToOne
+    @NotNull
+    @NonNull
+    @JoinColumn(name = "user_id")
+    private User user;
 }
