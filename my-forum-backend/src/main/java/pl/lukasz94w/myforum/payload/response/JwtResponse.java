@@ -14,6 +14,7 @@ public final class JwtResponse {
     //token data
     private String token;
     private final String type = "Bearer";
+    private int expirationTime;
 
     //user data
     private Long id;

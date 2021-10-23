@@ -6,4 +6,5 @@ import pl.lukasz94w.myforum.model.Topic;
 
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, Long> {
+    Topic findTopicById(final Long id);
 }

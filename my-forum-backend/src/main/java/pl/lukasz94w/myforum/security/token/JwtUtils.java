@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import pl.lukasz94w.myforum.security.userDetails.UserDetailsImpl;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
@@ -24,12 +25,20 @@ public class JwtUtils {
 
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
+        Claims claims = Jwts.claims();
+        claims.setSubject(userPrincipal.getUsername());
+        claims.put("scope", userPrincipal.getAuthorities().stream().map(Object::toString).collect(Collectors.toList()));
+
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
+    }
+
+    public int getExpirationTimeInSeconds() {
+        return jwtExpirationMs / 1000;
     }
 
     public String getUserNameFromJwtToken(String token) {

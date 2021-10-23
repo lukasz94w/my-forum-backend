@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.model.User;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -13,6 +15,12 @@ public class UserService {
     @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findUserByUsername(username).orElseThrow(
+                () -> new RuntimeException("Hello") //TODO implement my custom Exception
+        );
     }
 
     public void saveUser(User user) {

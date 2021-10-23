@@ -30,6 +30,10 @@ public class TopicService {
         topicRepository.deleteById(id);
     }
 
+    public Topic findTopicById(final Long id) {
+        return topicRepository.findTopicById(id);
+    }
+
     public TopicDto getTopicById(final Long id) {
         return DtoConverter.convertTopicToTopicDto(topicRepository.getById(id));
     }
