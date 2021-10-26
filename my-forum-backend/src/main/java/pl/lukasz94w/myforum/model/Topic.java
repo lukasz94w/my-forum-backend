@@ -36,4 +36,10 @@ public final class Topic {
     @NonNull
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @NotNull
+    @NonNull
+    @JoinColumn(name = "category_id")
+    private Category category;
 }

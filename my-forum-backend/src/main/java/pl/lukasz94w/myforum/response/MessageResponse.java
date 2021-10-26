@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.payload.response;
+package pl.lukasz94w.myforum.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

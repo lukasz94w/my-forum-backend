@@ -1,6 +1,7 @@
 package pl.lukasz94w.myforum.model;
 
 import lombok.*;
+import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 
 import javax.persistence.*;
 
@@ -19,5 +20,5 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     @NonNull
-    private EnumeratedRole name;
+    private EnumeratedRole enumeratedRole;
 }

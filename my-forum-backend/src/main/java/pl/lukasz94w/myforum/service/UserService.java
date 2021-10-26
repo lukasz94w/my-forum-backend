@@ -5,8 +5,6 @@ import org.springframework.stereotype.Service;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.model.User;
 
-import java.util.Optional;
-
 @Service
 public class UserService {
 

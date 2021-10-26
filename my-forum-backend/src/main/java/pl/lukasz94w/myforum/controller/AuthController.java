@@ -8,13 +8,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import pl.lukasz94w.myforum.model.EnumeratedRole;
+import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.model.Role;
 import pl.lukasz94w.myforum.model.User;
-import pl.lukasz94w.myforum.payload.request.LoginRequest;
-import pl.lukasz94w.myforum.payload.request.SignupRequest;
-import pl.lukasz94w.myforum.payload.response.JwtResponse;
-import pl.lukasz94w.myforum.payload.response.MessageResponse;
+import pl.lukasz94w.myforum.request.LoginRequest;
+import pl.lukasz94w.myforum.request.SignupRequest;
+import pl.lukasz94w.myforum.response.JwtResponse;
+import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
@@ -93,21 +93,21 @@ public class AuthController {
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(EnumeratedRole.ROLE_USER)
+            Role userRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_USER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "admin":
-                        Role adminRole = roleRepository.findByName(EnumeratedRole.ROLE_ADMIN)
+                        Role adminRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_ADMIN)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(adminRole);
 
                         break;
 
                     default:
-                        Role userRole = roleRepository.findByName(EnumeratedRole.ROLE_USER)
+                        Role userRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_USER)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(userRole);
                 }

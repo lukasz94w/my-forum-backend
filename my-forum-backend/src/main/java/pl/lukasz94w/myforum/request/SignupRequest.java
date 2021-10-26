@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.payload.request;
+package pl.lukasz94w.myforum.request;
 
 import lombok.Getter;
 import lombok.Setter;
