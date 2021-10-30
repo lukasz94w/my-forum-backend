@@ -16,4 +16,5 @@ public class NewTopicRequest {
     @Size(min = 5, max = 500)
     private String content;
 
+    private String category;
 }

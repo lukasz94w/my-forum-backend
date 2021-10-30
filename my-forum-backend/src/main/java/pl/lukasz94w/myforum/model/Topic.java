@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -31,13 +32,16 @@ public final class Topic {
     @Size(min = 5, max = 500)
     private String content;
 
-    @ManyToOne
+    private LocalDateTime dateTimeOfTopic = LocalDateTime.now();
+
+    @ManyToOne (fetch = FetchType.LAZY)
     @NotNull
     @NonNull
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    //with this addNew post doesnt work (fetch = FetchType.LAZY)
+    @OneToOne
     @NotNull
     @NonNull
     @JoinColumn(name = "category_id")

@@ -13,5 +13,6 @@ public class PostDto {
 
     private String content;
 
+    //is it needed?
     private Topic topic;
 }

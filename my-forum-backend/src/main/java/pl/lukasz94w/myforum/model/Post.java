@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -23,6 +24,8 @@ public class Post {
     @NonNull
     @Size(min = 5, max = 500)
     private String content;
+
+    private LocalDateTime dateTimeOfPost = LocalDateTime.now();
 
     @ManyToOne
     @NonNull

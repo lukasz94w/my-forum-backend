@@ -65,7 +65,7 @@ public class SummaryResponse {
                     tAdver = numberOfTopicsInThatCategory;
                     break;
                 }
-                case "psersonallife": {
+                case "personallife": {
                     tPers = numberOfTopicsInThatCategory;
                     break;
                 }
@@ -105,7 +105,7 @@ public class SummaryResponse {
                     pAdver = numberOfPostsInThatCategory;
                     break;
                 }
-                case "psersonallife": {
+                case "personallife": {
                     pPers = numberOfPostsInThatCategory;
                     break;
                 }
