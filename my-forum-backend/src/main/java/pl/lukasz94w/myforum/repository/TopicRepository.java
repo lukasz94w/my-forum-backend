@@ -14,7 +14,7 @@ import java.util.List;
 public interface TopicRepository extends JpaRepository<Topic, Long> {
     Topic findTopicById(final Long id);
 
-    Page<Topic> findAllTopicsByCategory(Category category, Pageable pageable);
+    Page<Topic> findTopicsByCategory(Category category, Pageable pageable);
 
     Integer countTopicByCategory(Category category);
 
@@ -25,4 +25,8 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
     //this query will return List<Object[]>
     @Query(value = "select count(topic.category), topic.category FROM Topic topic group by topic.category")
     List<Object[]> countByCategoryList();
+
+    //if there are many topics with same max(timeOfActualization) there will be returned all of them!
+    @Query(value = "select topic FROM Topic topic WHERE (topic.category, topic.timeOfActualization) IN (select topic.category, max(topic.timeOfActualization) FROM Topic topic group by topic.category)")
+    List<Topic> findLatestTopicInEachCategory();
 }

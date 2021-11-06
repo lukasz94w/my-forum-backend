@@ -10,11 +10,11 @@ import pl.lukasz94w.myforum.model.User;
 public class DtoConverter {
 
     public static TopicDto convertTopicToTopicDto(Topic topic) {
-        return new TopicDto(topic.getId(), topic.getTitle(), topic.getContent());
+        return new TopicDto(topic.getId(), topic.getTitle(), topic.getContent(), topic.getUser().getUsername());
     }
 
     public static PostDto convertPostToPostDto(Post post) {
-        return new PostDto(post.getId(), post.getContent(), post.getTopic());
+        return new PostDto(post.getId(), post.getContent(), post.getUser().getUsername());
     }
 
     public static UserDto convertUserToUserDto(User user) {

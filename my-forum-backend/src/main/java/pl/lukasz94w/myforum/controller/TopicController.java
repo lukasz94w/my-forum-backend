@@ -76,7 +76,7 @@ public class TopicController {
     @GetMapping("/findAllTopicsByCategory")
     public ResponseEntity<Map<String, Object>> findAllTopicsByCategory(@RequestParam(defaultValue = "0") int page, @RequestParam String category) {
 
-        return new ResponseEntity<>(this.topicService.findAllTopicsByCategory(page, category), HttpStatus.OK);
+        return new ResponseEntity<>(this.topicService.findLatestTopicsByCategory(page, category), HttpStatus.OK);
     }
 
     @GetMapping("/countTopicsAndPostsByCategory")
@@ -84,8 +84,9 @@ public class TopicController {
 
         List<Object[]> topicByCategoriesCount = topicService.countByCategoryList();
         List<Object[]> postByCategoriesCount = postService.countByCategoryList();
+        List<Topic> latestTopicsInEachCategory = topicService.findLatestTopicInEachCategory();
 
-        SummaryResponse summaryResponse = new SummaryResponse(topicByCategoriesCount, postByCategoriesCount);
+        SummaryResponse summaryResponse = new SummaryResponse(topicByCategoriesCount, postByCategoriesCount, latestTopicsInEachCategory);
 
         return new ResponseEntity<>(summaryResponse, HttpStatus.OK);
     }

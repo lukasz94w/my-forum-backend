@@ -1,9 +1,6 @@
 package pl.lukasz94w.myforum.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @Getter
+@Setter //finalnie dac setter tylko do czasu aktualizacji...
 @RequiredArgsConstructor
 @Table(name = "topics")
 public final class Topic {
@@ -34,7 +32,9 @@ public final class Topic {
 
     private LocalDateTime dateTimeOfTopic = LocalDateTime.now();
 
-    @ManyToOne (fetch = FetchType.LAZY)
+    private LocalDateTime timeOfActualization = dateTimeOfTopic;
+
+    @ManyToOne (fetch = FetchType.EAGER)
     @NotNull
     @NonNull
     @JoinColumn(name = "user_id")

@@ -2,6 +2,7 @@ package pl.lukasz94w.myforum.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import pl.lukasz94w.myforum.model.Topic;
 
 import java.util.List;
 
@@ -27,10 +28,20 @@ public class SummaryResponse {
     private long tPers = 0;
     private long pPers = 0;
 
-    public SummaryResponse(List<Object[]> topicByCategoriesCount, List<Object[]> postByCategoriesCount) {
+    private Topic latestTopProg;
+    private Topic latestTopSport;
+    private Topic latestTopElect;
+    private Topic latestTopCar;
+
+    private Topic latestTopIntro;
+    private Topic latestTopAdver;
+    private Topic latestTopPers;
+
+    public SummaryResponse(List<Object[]> topicByCategoriesCount, List<Object[]> postByCategoriesCount, List<Topic> latestTopicInEachCategory) {
         prepareTopicsCount(topicByCategoriesCount);
         preparePostsCount(postByCategoriesCount);
         prepareTotalCounts();
+        prepareLatestTopics(latestTopicInEachCategory);
     }
 
     private void prepareTopicsCount(List<Object[]> topicByCategoriesCount) {
@@ -118,4 +129,43 @@ public class SummaryResponse {
         totalOSub = tIntro + pIntro + tAdver + pAdver + tPers + pPers;
     }
 
+
+    private void prepareLatestTopics(List<Topic> latestTopicInEachCategory) {
+        for (Topic topic : latestTopicInEachCategory) {
+            String categoryOfTopic = topic.getCategory().toString();
+
+            switch(categoryOfTopic) {
+                case "programming":
+                {
+                    latestTopProg = topic;
+                    break;
+                }
+                case "sport":
+                {
+                    latestTopSport = topic;
+                    break;
+                }
+                case "electronic": {
+                    latestTopElect = topic;
+                    break;
+                }
+                case "car": {
+                    latestTopCar = topic;
+                    break;
+                }
+                case "introduction": {
+                    latestTopIntro = topic;
+                    break;
+                }
+                case "advertisement": {
+                    latestTopAdver = topic;
+                    break;
+                }
+                case "personallife": {
+                    latestTopPers = topic;
+                    break;
+                }
+            }
+        }
+    }
 }
