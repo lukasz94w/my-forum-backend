@@ -12,7 +12,6 @@ import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
 import pl.lukasz94w.myforum.request.NewTopicRequest;
-import pl.lukasz94w.myforum.response.SummaryResponse;
 import pl.lukasz94w.myforum.security.userDetails.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.CategoryService;
 import pl.lukasz94w.myforum.service.PostService;
@@ -43,6 +42,7 @@ public class TopicController {
     @PostMapping("/addTopic")
     public ResponseEntity<TopicDto> createTopic(@RequestBody NewTopicRequest newTopicRequest, Authentication authentication) {
 
+        //TODO tutaj powinna byc raczej metoda serwisowa createTopic zwracajaca ResponseEntity<TopicDto>
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         User authenticatedUser = userService.findUserByUsername(userDetailsImpl.getUsername());
 
@@ -75,19 +75,11 @@ public class TopicController {
 
     @GetMapping("/findAllTopicsByCategory")
     public ResponseEntity<Map<String, Object>> findAllTopicsByCategory(@RequestParam(defaultValue = "0") int page, @RequestParam String category) {
-
         return new ResponseEntity<>(this.topicService.findLatestTopicsByCategory(page, category), HttpStatus.OK);
     }
 
     @GetMapping("/countTopicsAndPostsByCategory")
-    public ResponseEntity<SummaryResponse> countTopicsAndPostsByCategory() {
-
-        List<Object[]> topicByCategoriesCount = topicService.countByCategoryList();
-        List<Object[]> postByCategoriesCount = postService.countByCategoryList();
-        List<Topic> latestTopicsInEachCategory = topicService.findLatestTopicInEachCategory();
-
-        SummaryResponse summaryResponse = new SummaryResponse(topicByCategoriesCount, postByCategoriesCount, latestTopicsInEachCategory);
-
-        return new ResponseEntity<>(summaryResponse, HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> countTopicsAndPostsByCategory() {
+        return new ResponseEntity<>(this.topicService.countTopicsAndPostsByCategory(), HttpStatus.OK);
     }
 }

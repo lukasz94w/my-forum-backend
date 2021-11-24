@@ -1,6 +1,7 @@
 package pl.lukasz94w.myforum.model;
 
 import lombok.*;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -42,4 +43,8 @@ public final class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    @OneToOne
+    @JoinColumn(name = "profilepic_id")
+    private ProfilePic profilePic;
 }

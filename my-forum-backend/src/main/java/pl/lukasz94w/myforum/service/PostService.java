@@ -30,6 +30,9 @@ public class PostService {
         return postRepository.countByCategoryList();
     }
 
+    public List<Post> findLatestPostsInSummaryTopics(List<Long> topicIds) {
+        return postRepository.findLatestPostsInEachOfLatestTopics(topicIds);
+    }
 
     public Integer countPostByTopicCategory(Category category) {
         return postRepository.countPostByTopicCategory(category);

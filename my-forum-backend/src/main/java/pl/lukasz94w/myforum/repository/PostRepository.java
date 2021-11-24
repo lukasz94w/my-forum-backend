@@ -35,4 +35,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     "HAVING post.topic.category = :category " +
                     "AND post.topic.id IN (:topicIds))")
     List<Post> findLatestPostsInPageableTopics(@Param("topicIds") List<Long> topicIds, @Param("category") Category category);
+
+    @Query(value =
+            "SELECT post FROM Post post " +
+                    "WHERE (post.topic, post.dateTimeOfPost) " +
+                    "IN (SELECT post.topic, MAX(post.dateTimeOfPost) FROM Post post " +
+                    "GROUP BY post.topic " +
+                    "HAVING post.topic.id IN (:topicIds))")
+    List<Post> findLatestPostsInEachOfLatestTopics(@Param("topicIds") List<Long> topicIds);
 }

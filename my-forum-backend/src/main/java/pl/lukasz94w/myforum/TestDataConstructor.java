@@ -78,13 +78,13 @@ public class TestDataConstructor {
         categoryRepository.save(new Category(EnumeratedCategory.CAR));
         categoryRepository.save(new Category(EnumeratedCategory.INTRODUCTION));
         categoryRepository.save(new Category(EnumeratedCategory.ADVERTISEMENT));
-        categoryRepository.save(new Category(EnumeratedCategory.PERSONALLIFE));
+        categoryRepository.save(new Category(EnumeratedCategory.PERSONAL));
 
         Category programming = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.PROGRAMMING);
         Category sport = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.SPORT);
         Category electronic = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.ELECTRONIC);
 
-        for (int i = 0; i <= 15; i++) {
+        for (int i = 0; i <= 250; i++) {
 
             //TOPICS AND POSTS
             Topic topic1 = new Topic("Kupno telewizora za 2000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.", user1, electronic);
