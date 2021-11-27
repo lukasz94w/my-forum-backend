@@ -18,7 +18,7 @@ import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
-import pl.lukasz94w.myforum.security.userDetails.UserDetailsImpl;
+import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
 import javax.validation.Valid;
 import java.util.HashSet;

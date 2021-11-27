@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.controlleradvice;
+package pl.lukasz94w.myforum.advice;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.lukasz94w.myforum.model.ProfilePic;
 import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.response.MessageResponse;
-import pl.lukasz94w.myforum.security.userDetails.UserDetailsImpl;
+import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.UserService;
 
 import java.util.HashMap;

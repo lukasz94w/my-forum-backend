@@ -6,13 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import pl.lukasz94w.myforum.dto.TopicDto;
+import pl.lukasz94w.myforum.response.dto.TopicDto;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
 import pl.lukasz94w.myforum.request.NewTopicRequest;
-import pl.lukasz94w.myforum.security.userDetails.UserDetailsImpl;
+import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.CategoryService;
 import pl.lukasz94w.myforum.service.PostService;
 import pl.lukasz94w.myforum.service.TopicService;
@@ -73,9 +73,9 @@ public class TopicController {
         return new ResponseEntity<>(this.topicService.getAllTopics(), HttpStatus.OK);
     }
 
-    @GetMapping("/findAllTopicsByCategory")
-    public ResponseEntity<Map<String, Object>> findAllTopicsByCategory(@RequestParam(defaultValue = "0") int page, @RequestParam String category) {
-        return new ResponseEntity<>(this.topicService.findLatestTopicsByCategory(page, category), HttpStatus.OK);
+    @GetMapping("/findPageableTopicsInCategory")
+    public ResponseEntity<Map<String, Object>> findPageableTopicsInCategory(@RequestParam(defaultValue = "0") int page, @RequestParam String category) {
+        return new ResponseEntity<>(this.topicService.findPageableTopicsInCategory(page, category), HttpStatus.OK);
     }
 
     @GetMapping("/countTopicsAndPostsByCategory")

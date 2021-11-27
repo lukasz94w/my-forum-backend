@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import pl.lukasz94w.myforum.security.userDetails.UserDetailsImpl;
+import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
 import java.util.Date;
 import java.util.stream.Collectors;

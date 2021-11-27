@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.security.userDetails;
+package pl.lukasz94w.myforum.security.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.security.userDetails;
+package pl.lukasz94w.myforum.security.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;

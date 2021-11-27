@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.lukasz94w.myforum.security.token.AuthEntryPointJwt;
 import pl.lukasz94w.myforum.security.token.AuthTokenFilter;
-import pl.lukasz94w.myforum.security.userDetails.UserDetailsServiceImpl;
+import pl.lukasz94w.myforum.security.user.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity

@@ -24,8 +24,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 //    List<CategoriesDto> countByCategoryList();
 
     //this query will return List<Object[]>
-    @Query(value = "select count(post.topic.category), post.topic.category FROM Post post group by post.topic.category")
-    List<Object[]> countByCategoryList();
+    @Query(value =
+            "SELECT COUNT (post.topic.category), post.topic.category " +
+                    "FROM Post post " +
+                    "GROUP BY post.topic.category")
+    List<Object[]> countPostsByCategories();
 
     @Query(value =
             "SELECT post FROM Post post " +
@@ -43,4 +46,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     "GROUP BY post.topic " +
                     "HAVING post.topic.id IN (:topicIds))")
     List<Post> findLatestPostsInEachOfLatestTopics(@Param("topicIds") List<Long> topicIds);
+
+    @Query(value =
+            "SELECT post.topic, COUNT(post.topic) " +
+                    "FROM Post post " +
+                    "WHERE post.topic.id IN :topicIds " +
+                    "GROUP BY post.topic")
+    List<Object[]> countPostsInPageableTopics(@Param("topicIds") List<Long> topicIds);
 }

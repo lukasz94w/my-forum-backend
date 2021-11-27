@@ -1,18 +1,12 @@
-package pl.lukasz94w.myforum.dto;
+package pl.lukasz94w.myforum.response.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @AllArgsConstructor
-public class TopicDto {
+public class PostDto {
     private Long id;
-
-    private String title;
-
     private String content;
-
     private String username;
 }

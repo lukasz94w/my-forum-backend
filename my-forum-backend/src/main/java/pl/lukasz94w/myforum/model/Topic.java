@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @Getter
-@Setter //finalnie dac setter tylko do czasu aktualizacji...
+@Setter //TODO finalnie dac setter tylko do czasu aktualizacji...
 @RequiredArgsConstructor
 @Table(name = "topics")
 public final class Topic {
@@ -30,9 +30,7 @@ public final class Topic {
     @Size(min = 5, max = 500)
     private String content;
 
-    private LocalDateTime dateTimeOfTopic = LocalDateTime.now();
-
-    private LocalDateTime timeOfActualization = dateTimeOfTopic;
+    private LocalDateTime dateTime = LocalDateTime.now();
 
     @ManyToOne (fetch = FetchType.EAGER)
     @NotNull
@@ -46,4 +44,6 @@ public final class Topic {
     @NonNull
     @JoinColumn(name = "category_id")
     private Category category;
+
+    private LocalDateTime timeOfActualization = dateTime;
 }

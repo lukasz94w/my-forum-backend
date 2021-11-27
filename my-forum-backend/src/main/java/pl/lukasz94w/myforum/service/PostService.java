@@ -2,8 +2,8 @@ package pl.lukasz94w.myforum.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.lukasz94w.myforum.dto.PostDto;
-import pl.lukasz94w.myforum.dtoConverter.DtoConverter;
+import pl.lukasz94w.myforum.response.dto.PostDto;
+import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.repository.PostRepository;
@@ -23,11 +23,11 @@ public class PostService {
 
     public PostDto addPost(Post post) {
         postRepository.save(post);
-        return DtoConverter.convertPostToPostDto(post);
+        return MapperDto.mapToPostDto(post);
     }
 
     public List<Object[]> countByCategoryList() {
-        return postRepository.countByCategoryList();
+        return postRepository.countPostsByCategories();
     }
 
     public List<Post> findLatestPostsInSummaryTopics(List<Long> topicIds) {
@@ -41,7 +41,7 @@ public class PostService {
     public List<PostDto> getPostsByTopicId(Long id) {
         return postRepository.findAllByTopicId(id).
                 stream()
-                .map(DtoConverter::convertPostToPostDto)
+                .map(MapperDto::mapToPostDto)
                 .collect(Collectors.toList());
     }
 }
