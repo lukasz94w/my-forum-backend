@@ -25,7 +25,7 @@ public class Post {
     @Size(min = 5, max = 500)
     private String content;
 
-    private LocalDateTime dateTimeOfPost = LocalDateTime.now();
+    private LocalDateTime dateTime = LocalDateTime.now();
 
     @ManyToOne (fetch = FetchType.EAGER)
     @NonNull
@@ -38,15 +38,4 @@ public class Post {
     @NotNull
     @JoinColumn(name = "user_id")
     private User user;
-
-    @Override
-    public String toString() {
-        return "Post{" +
-                "id=" + id +
-                ", content='" + content + '\'' +
-                ", dateTimeOfPost=" + dateTimeOfPost +
-                ", topic=" + topic +
-                ", user=" + user +
-                '}';
-    }
 }

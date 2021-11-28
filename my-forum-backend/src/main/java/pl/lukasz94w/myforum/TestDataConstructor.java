@@ -8,8 +8,8 @@ import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
 import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.repository.CategoryRepository;
 import pl.lukasz94w.myforum.repository.RoleRepository;
+import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.service.PostService;
-import pl.lukasz94w.myforum.service.TopicService;
 import pl.lukasz94w.myforum.service.UserService;
 
 import javax.annotation.PostConstruct;
@@ -19,7 +19,7 @@ import java.util.Set;
 @Component
 public class TestDataConstructor {
 
-    private final TopicService topicService;
+    private final TopicRepository topicRepository;
     private final PostService postService;
     private final UserService userService;
     private final RoleRepository roleRepository;
@@ -27,8 +27,8 @@ public class TestDataConstructor {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public TestDataConstructor(TopicService topicService, PostService postService, UserService userService, RoleRepository roleRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
-        this.topicService = topicService;
+    public TestDataConstructor(TopicRepository topicRepository, PostService postService, UserService userService, RoleRepository roleRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
+        this.topicRepository = topicRepository;
         this.postService = postService;
         this.userService = userService;
         this.roleRepository = roleRepository;
@@ -86,55 +86,31 @@ public class TestDataConstructor {
 
         for (int i = 0; i <= 250; i++) {
 
-            //TOPICS AND POSTS
-            Topic topic1 = new Topic("Kupno telewizora za 2000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.", user1, electronic);
-            topicService.createTopic(topic1);
+            Topic topic1 = new Topic("Kupno telewizora za 2000zl TOPIC 1", user1, electronic);
+            topicRepository.save(topic1);
+            Topic topic2 = new Topic("Kupno telewizora za 5000zl", user2, programming);
+            topicRepository.save(topic2);
+            Topic topic5 = new Topic("Topic 5", user2, sport);
+            topicRepository.save(topic5);
+            Topic topic6 = new Topic("Kupno telewizora za 2000zl", user3, programming);
+            topicRepository.save(topic6);
+            Topic topic7 = new Topic("Kupno telewizora za 5000zl", user4, programming);
+            topicRepository.save(topic7);
 
-            Topic topic2 = new Topic("Kupno telewizora za 5000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.", user2, programming);
-            topicService.createTopic(topic2);
-
-            Topic topic5 = new Topic("Topic 5", "content",  user2, programming);
-            topicService.createTopic(topic5);
-
-            postService.addPost(new Post("To jest pierwszy komentarz do tematu nr 1", topic1, user1));
-            postService.addPost(new Post("To jest drugi komentarz do tematu nr 1", topic2, user3));
+            for (int j = 0; j < 20; j++) {
+                postService.addPost(new Post("To jest pierwszy komentarz do tematu nr 1", topic1, user1));
+            }
+            postService.addPost(new Post("To jest drugi komentarz do tematu nr 1", topic5, user3));
             postService.addPost(new Post("To jest trzeci komentarz do tematu nr 1", topic1, user5));
-
             postService.addPost(new Post("To jest pierwszy komentarz do tematu nr 2", topic2, user4));
             postService.addPost(new Post("To jest drugi komentarz do tematu nr 2", topic1, user2));
             postService.addPost(new Post("To jest trzeci komentarz do tematu nr 2", topic2, user1));
-
-            topicService.createTopic(new Topic("Kupno telewizora za 2000zl", "Content 1", user3, sport));
-            topicService.createTopic(new Topic("Pomoc w wyborze roweru na komunię", "Content 2", user2, sport));
-            topicService.createTopic(new Topic("Title 3", "Content 3", user1, electronic));
-            topicService.createTopic(new Topic("Title 4", "Content 4", admin, sport));
-            topicService.createTopic(new Topic("Title 5", "Content 5", user3, programming));
-            topicService.createTopic(new Topic("Title 6", "Content 6", user4, sport));
-
-            Topic topic6 = new Topic("Kupno telewizora za 2000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.", user3, programming);
-            topicService.createTopic(topic6);
-
-            Topic topic7 = new Topic("Kupno telewizora za 5000zl", "Cras vel sapien sagittis, vulputate felis sit amet, volutpat arcu. Cras euismod metus eros, ut lobortis elit egestas ut. Aliquam at posuere metus. In luctus nibh mi, non tincidunt tortor feugiat sed. Morbi non venenatis nunc. Aliquam posuere, lorem porttitor feugiat ultricies, sem urna venenatis metus, vitae ornare justo leo at libero. Aliquam fringilla lectus at ullamcorper venenatis. Sed et elementum sapienm sed quis ipsum.", user4, programming);
-            topicService.createTopic(topic7);
-
             postService.addPost(new Post("To jest pierwszy komentarz do tematu nr 1", topic6, user1));
             postService.addPost(new Post("To jest drugi komentarz do tematu nr 1", topic7, user2));
             postService.addPost(new Post("To jest trzeci komentarz do tematu nr 1", topic5, user3));
-
             postService.addPost(new Post("To jest pierwszy komentarz do tematu nr 2", topic7, admin));
             postService.addPost(new Post("To jest drugi komentarz do tematu nr 2", topic6, user1));
             postService.addPost(new Post("To jest trzeci komentarz do tematu nr 2", topic5, user2));
-
-            topicService.createTopic(new Topic("Kupno telewizora za 2000zl", "Content 1", admin, sport));
-            postService.addPost(new Post("To jest drugi komentarz do tematu nr 2", topic7, user1));
-            topicService.createTopic(new Topic("Newest sport", "Content 2", admin, sport));
-            postService.addPost(new Post("To jest drugi komentarz do tematu nr 2", topic6, user1));
-            topicService.createTopic(new Topic("Title 3", "Content 3", user4, programming));
-            postService.addPost(new Post("To jest drugi komentarz do tematu nr 2", topic7, user1));
-            topicService.createTopic(new Topic("Title 4", "Content 4", user2, electronic));
-            topicService.createTopic(new Topic("Newest programming", "Content 5", user1, programming));
-            postService.addPost(new Post("To jest trzeci komentarz do tematu nr 2", topic6, user2));
-            topicService.createTopic(new Topic("Newest electronic", "Content 6", user3, electronic));
         }
 
         System.out.println("Data successfully created");

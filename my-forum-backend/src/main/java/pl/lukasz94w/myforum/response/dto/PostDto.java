@@ -8,5 +8,6 @@ import lombok.Getter;
 public class PostDto {
     private Long id;
     private String content;
-    private String username;
+    private String user;
+    private byte[] profilePic;
 }

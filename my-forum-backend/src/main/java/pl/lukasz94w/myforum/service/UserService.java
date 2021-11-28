@@ -20,7 +20,7 @@ public final class UserService {
     }
 
     public User findUserByUsername(String username) {
-        return userRepository.findUserByUsername(username).orElseThrow(
+        return userRepository.findUserByName(username).orElseThrow(
                 () -> new RuntimeException("Hello") //TODO implement my custom Exception
         );
     }

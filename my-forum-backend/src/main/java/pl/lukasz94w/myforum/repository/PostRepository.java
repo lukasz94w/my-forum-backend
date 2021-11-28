@@ -1,5 +1,7 @@
 package pl.lukasz94w.myforum.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findAllByTopicId(Long id);
+    Page<Post> findByTopicId(Long id, Pageable pageable);
 
     Integer countPostByTopicCategory(Category category);
 
@@ -32,8 +34,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(value =
             "SELECT post FROM Post post " +
-                    "WHERE (post.topic, post.dateTimeOfPost) " +
-                    "IN (SELECT post.topic, MAX(post.dateTimeOfPost) FROM Post post " +
+                    "WHERE (post.topic, post.dateTime) " +
+                    "IN (SELECT post.topic, MAX(post.dateTime) FROM Post post " +
                     "GROUP BY post.topic " +
                     "HAVING post.topic.category = :category " +
                     "AND post.topic.id IN (:topicIds))")
@@ -41,8 +43,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(value =
             "SELECT post FROM Post post " +
-                    "WHERE (post.topic, post.dateTimeOfPost) " +
-                    "IN (SELECT post.topic, MAX(post.dateTimeOfPost) FROM Post post " +
+                    "WHERE (post.topic, post.dateTime) " +
+                    "IN (SELECT post.topic, MAX(post.dateTime) FROM Post post " +
                     "GROUP BY post.topic " +
                     "HAVING post.topic.id IN (:topicIds))")
     List<Post> findLatestPostsInEachOfLatestTopics(@Param("topicIds") List<Long> topicIds);

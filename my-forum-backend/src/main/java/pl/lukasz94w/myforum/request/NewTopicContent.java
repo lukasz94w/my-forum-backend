@@ -6,7 +6,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
-public class NewTopicRequest {
+public class NewTopicContent {
 
     @NotBlank
     @Size(min = 5, max = 100)

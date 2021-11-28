@@ -69,9 +69,9 @@ public class TopicServiceUtil {
 
         Post latestPost = findLatestPostInTopic(foundTopic, latestPostInEachOfLatestTopics);
         if (latestPost == null) {
-            lastTopicActivity = new LastTopicActivity(foundTopic.getTitle(), foundTopic.getId(), foundTopic.getUser().getUsername(), getProfilePicData(foundTopic.getUser().getProfilePic()), foundTopic.getDateTime());
+            lastTopicActivity = new LastTopicActivity(foundTopic.getTitle(), foundTopic.getId(), foundTopic.getUser().getName(), getProfilePicData(foundTopic.getUser().getProfilePic()), foundTopic.getDateTime());
         } else {
-            lastTopicActivity = new LastTopicActivity(foundTopic.getTitle(), foundTopic.getId(), latestPost.getUser().getUsername(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTimeOfPost());
+            lastTopicActivity = new LastTopicActivity(foundTopic.getTitle(), foundTopic.getId(), latestPost.getUser().getName(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTime());
         }
 
         return lastTopicActivity;
@@ -90,33 +90,33 @@ public class TopicServiceUtil {
         for (Topic topic : listOfLatest10Topics) {
             Post latestPost = findLatestPostInTopic(topic, listOfLatestPosts);
             if (latestPost == null) {
-                fullListOfLastActivitiesInPageableTopics.add(new LastTopicActivity("", null, topic.getUser().getUsername(), getProfilePicData(topic.getUser().getProfilePic()), topic.getDateTime()));
+                fullListOfLastActivitiesInPageableTopics.add(new LastTopicActivity("", null, topic.getUser().getName(), getProfilePicData(topic.getUser().getProfilePic()), topic.getDateTime()));
             } else {
-                fullListOfLastActivitiesInPageableTopics.add(new LastTopicActivity("", null, latestPost.getUser().getUsername(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTimeOfPost()));
+                fullListOfLastActivitiesInPageableTopics.add(new LastTopicActivity("", null, latestPost.getUser().getName(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTime()));
             }
         }
 
         return fullListOfLastActivitiesInPageableTopics;
     }
 
-    public static List<Long> prepareNumberOfPostsInPageableTopics(List<Topic> listOfLatest10Topics, List<Object[]> numberOfPostsInPageableTopics) {
+    public static List<Long> prepareNumberOfAnswersInPageableTopics(List<Topic> listOfLatest10Topics, List<Object[]> numberOfPostsInPageableTopics) {
         List<Long> numberOfPosts = new LinkedList<>();
 
         for (Topic latestTopic : listOfLatest10Topics) {
-            numberOfPosts.add(countNumberOfPostsInTopic(latestTopic, numberOfPostsInPageableTopics));
+            numberOfPosts.add(countNumberOfAnswersInTopic(latestTopic, numberOfPostsInPageableTopics));
         }
 
         return numberOfPosts;
     }
 
-    private static Long countNumberOfPostsInTopic(Topic latestTopic, List<Object[]> numberOfPostsInPageableTopics) {
+    private static Long countNumberOfAnswersInTopic(Topic latestTopic, List<Object[]> numberOfPostsInPageableTopics) {
 
         for (Object[] object : numberOfPostsInPageableTopics) {
             Topic topic = (Topic) object[0];
             long numberOfPostsInTopic = (long) object[1];
 
             if (topic.equals(latestTopic))
-                return numberOfPostsInTopic;
+                return numberOfPostsInTopic - 1;
         }
 
         return 0L;

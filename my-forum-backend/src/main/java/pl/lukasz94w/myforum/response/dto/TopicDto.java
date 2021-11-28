@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 public class TopicDto {
     private Long id;
     private String title;
-    private String content;
     private String user;
     private LocalDateTime dateTime;
 }

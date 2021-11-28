@@ -5,17 +5,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
+import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
 import pl.lukasz94w.myforum.repository.CategoryRepository;
 import pl.lukasz94w.myforum.repository.PostRepository;
 import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
+import pl.lukasz94w.myforum.request.NewTopicContent;
 import pl.lukasz94w.myforum.response.dto.TopicDto;
 import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
+import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,9 +42,18 @@ public class TopicService {
         this.userRepository = userRepository;
     }
 
-    public TopicDto createTopic(Topic topic) {
-        topicRepository.save(topic);
-        return MapperDto.mapToTopicDto(topic);
+    public void createTopic(NewTopicContent newTopicContent, Authentication authentication) {
+
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
+        User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
+
+        EnumeratedCategory enumeratedCategory = EnumeratedCategory.valueOf(newTopicContent.getCategory().toUpperCase());
+        Category topicCategory = categoryRepository.findByEnumeratedCategory(enumeratedCategory);
+
+        Topic newTopic = new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory);
+        this.topicRepository.save(newTopic);
+        Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), newTopic, authenticatedUser);
+        this.postRepository.save(firstPostUnderNewTopic);
     }
 
     public void deleteTopicById(final Long id) {
@@ -87,14 +100,14 @@ public class TopicService {
 
         List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfPostsInPageableTopics = prepareNumberOfPostsInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
+        List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInPageableTopics(listOfTopicIds, chosenCategory);
         List<LastTopicActivity> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);
-        response.put("numberOfPostsInPageableTopics", numberOfPostsInPageableTopics);
+        response.put("numberOfPostsInPageableTopics", numberOfAnswersInPageableTopics);
         response.put("lastPageableTopicActivities", lastPageableTopicActivities);
         response.put("currentPage", pageableTopics.getNumber());
         response.put("totalTopics", pageableTopics.getTotalElements());

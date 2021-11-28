@@ -24,7 +24,7 @@ public final class User {
     @NotBlank
     @NonNull
     @Size(min = 4, max = 30)
-    private String username;
+    private String name;
 
     @NotBlank
     @NonNull

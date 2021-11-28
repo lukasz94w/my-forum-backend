@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
-public class NewPostRequest {
+public class NewPostContent {
 
     @NotBlank
     @Size(min = 5, max = 500)
