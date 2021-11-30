@@ -22,7 +22,7 @@ public class MapperDto {
             profilePicData = profilePic.getData();
         }
 
-        return new PostDto(post.getId(), post.getContent(), post.getUser().getName(), profilePicData);
+        return new PostDto(post.getId(), post.getContent(), post.getUser().getName(), post.getDateTime(), profilePicData);
     }
 
     public static UserDto mapToUserDto(User user) {
