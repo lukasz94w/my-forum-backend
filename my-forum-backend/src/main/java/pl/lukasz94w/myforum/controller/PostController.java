@@ -6,18 +6,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import pl.lukasz94w.myforum.response.dto.PostDto;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.request.NewPostContent;
+import pl.lukasz94w.myforum.response.dto.PostDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.PostService;
 import pl.lukasz94w.myforum.service.TopicService;
 import pl.lukasz94w.myforum.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @RestController

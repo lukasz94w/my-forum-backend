@@ -10,6 +10,7 @@ import pl.lukasz94w.myforum.request.NewTopicContent;
 import pl.lukasz94w.myforum.response.dto.TopicDto;
 import pl.lukasz94w.myforum.service.TopicService;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ public class TopicController {
 
     @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
     @PostMapping("/addTopic")
-    public ResponseEntity createTopic(@RequestBody NewTopicContent newTopicContent, Authentication authentication) {
+    public ResponseEntity createTopic(@Valid @RequestBody NewTopicContent newTopicContent, Authentication authentication) {
         topicService.createTopic(newTopicContent, authentication);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
