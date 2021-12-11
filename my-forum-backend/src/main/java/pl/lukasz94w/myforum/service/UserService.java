@@ -56,7 +56,7 @@ public final class UserService {
         return mapWithProfilePic;
     }
 
-    public ResponseEntity<MessageResponse> updateProfilePic(MultipartFile image, Authentication authentication) {
+    public ResponseEntity<MessageResponse> changeProfilePic(MultipartFile image, Authentication authentication) {
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
 
@@ -79,8 +79,7 @@ public final class UserService {
             authenticatedUser.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(authenticatedUser);
             return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
-        }
-        else {
+        } else {
             return ResponseEntity.badRequest().body(new MessageResponse("Current password is not correct"));
         }
     }

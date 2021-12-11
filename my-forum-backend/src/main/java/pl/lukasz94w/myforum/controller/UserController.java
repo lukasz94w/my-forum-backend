@@ -25,9 +25,9 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
-    @PostMapping("/updateProfilePic")
-    public ResponseEntity<MessageResponse> updateProfilePic(@RequestParam("image") MultipartFile image, Authentication authentication) {
-        return userService.updateProfilePic(image, authentication);
+    @PostMapping("/changeProfilePic")
+    public ResponseEntity<MessageResponse> changeProfilePic(@RequestParam("image") MultipartFile image, Authentication authentication) {
+        return userService.changeProfilePic(image, authentication);
     }
 
     @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
