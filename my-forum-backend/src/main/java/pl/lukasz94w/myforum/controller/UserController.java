@@ -42,4 +42,9 @@ public class UserController {
         return userService.changePassword(request.getCurrentPassword(), request.getNewPassword(), authentication);
     }
 
+    @GetMapping("/findPageablePostsByUser")
+    public Map<String, Object> findPageablePostsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
+        return userService.findPageablePostsByUser(page, username);
+    }
+
 }

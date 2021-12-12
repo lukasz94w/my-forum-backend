@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
+import pl.lukasz94w.myforum.model.User;
 
 import java.util.List;
 
@@ -55,4 +56,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     "WHERE post.topic.id IN :topicIds " +
                     "GROUP BY post.topic")
     List<Object[]> countPostsInPageableTopics(@Param("topicIds") List<Long> topicIds);
+
+    Page<Post> findByUser(User user, Pageable pageable);
 }
