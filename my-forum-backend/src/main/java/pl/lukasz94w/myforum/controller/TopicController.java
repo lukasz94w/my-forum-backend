@@ -10,6 +10,7 @@ import pl.lukasz94w.myforum.request.NewTopicContent;
 import pl.lukasz94w.myforum.response.dto.TopicDto;
 import pl.lukasz94w.myforum.service.TopicService;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -26,16 +27,14 @@ public class TopicController {
 
     @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
     @PostMapping("/addTopic")
-    public ResponseEntity createTopic(@RequestBody NewTopicContent newTopicContent, Authentication authentication) {
-        topicService.createTopic(newTopicContent, authentication);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<HttpStatus> createTopic(@Valid @RequestBody NewTopicContent newTopicContent, Authentication authentication) {
+        return topicService.createTopic(newTopicContent, authentication);
     }
 
     @PreAuthorize("hasRole ('ADMIN')")
     @GetMapping("/delete/{id}")
-    public ResponseEntity deletePostById(@PathVariable final Long id) {
-        topicService.deleteTopicById(id);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity<HttpStatus> deletePostById(@PathVariable final Long id) {
+        return topicService.deleteTopicById(id);
     }
 
     @GetMapping("getTopicById/{id}")
@@ -45,7 +44,6 @@ public class TopicController {
 
     @GetMapping("/getTopics")
     public ResponseEntity<List<TopicDto>> getAllTopics() {
-        //TODO tutaj mozna topic content wlasnie zwracac
         return new ResponseEntity<>(this.topicService.getAllTopics(), HttpStatus.OK);
     }
 

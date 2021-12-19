@@ -5,13 +5,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
+import pl.lukasz94w.myforum.model.Topic;
+import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.repository.PostRepository;
+import pl.lukasz94w.myforum.repository.TopicRepository;
+import pl.lukasz94w.myforum.repository.UserRepository;
+import pl.lukasz94w.myforum.request.NewPostContent;
 import pl.lukasz94w.myforum.response.dto.PostDto;
 import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
+import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -22,13 +32,17 @@ import java.util.stream.Collectors;
 public class PostService {
 
     PostRepository postRepository;
+    UserRepository userRepository;
+    TopicRepository topicRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, TopicRepository topicRepository) {
         this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.topicRepository = topicRepository;
     }
 
-    public PostDto addPost(Post post) {
+    public PostDto addPostConstructor(Post post) {
         postRepository.save(post);
         return MapperDto.mapToPostDto(post);
     }
@@ -59,5 +73,24 @@ public class PostService {
         response.put("totalPages", pageablePosts.getTotalPages());
 
         return response;
+    }
+
+    public Integer countPostByTopic(Topic topic) {
+        return postRepository.countPostByTopic(topic);
+    }
+
+    public ResponseEntity<HttpStatus> addPost(NewPostContent newPostContent, Authentication authentication) {
+
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
+        User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
+
+        Topic topicOfPost = topicRepository.findTopicById(newPostContent.getTopicId());
+        topicOfPost.setTimeOfActualization(LocalDateTime.now());
+        //TODO czy tutaj save nie brakuje?
+        int numberOfPostsInTopic = postRepository.countPostByTopic(topicOfPost);
+        Post newPost = new Post(newPostContent.getContent(), numberOfPostsInTopic + 1, topicOfPost, authenticatedUser);
+        postRepository.save(newPost);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

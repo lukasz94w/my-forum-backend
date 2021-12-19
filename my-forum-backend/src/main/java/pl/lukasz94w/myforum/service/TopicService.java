@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.lukasz94w.myforum.model.Category;
@@ -42,7 +44,7 @@ public class TopicService {
         this.userRepository = userRepository;
     }
 
-    public void createTopic(NewTopicContent newTopicContent, Authentication authentication) {
+    public ResponseEntity<HttpStatus> createTopic(NewTopicContent newTopicContent, Authentication authentication) {
 
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
@@ -52,12 +54,15 @@ public class TopicService {
 
         Topic newTopic = new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory);
         this.topicRepository.save(newTopic);
-        Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), newTopic, authenticatedUser);
+        Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), 1, newTopic, authenticatedUser);
         this.postRepository.save(firstPostUnderNewTopic);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    public void deleteTopicById(final Long id) {
+    public ResponseEntity<HttpStatus> deleteTopicById(final Long id) {
         topicRepository.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     public Topic findTopicById(final Long id) {
@@ -103,7 +108,7 @@ public class TopicService {
         List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInPageableTopics(listOfTopicIds, chosenCategory);
-        List<LastTopicActivity> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
+        List<LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);
@@ -144,7 +149,7 @@ public class TopicService {
         List<Topic> latestTopicsInEachCategory = topicRepository.findLatestTopicInEachCategory();
         List<Long> listOfTopicIds = latestTopicsInEachCategory.stream().map(Topic::getId).collect(Collectors.toList());
         List<Post> latestPostInLatestTopics = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastTopicActivity> lastTopicActivities = prepareLastActivitiesInEachCategory(latestTopicsInEachCategory, latestPostInLatestTopics);
+        List<LastActivityInCategory> lastTopicActivities = prepareLastActivitiesInEachCategory(latestTopicsInEachCategory, latestPostInLatestTopics);
 
         Map<String, Object> response = new HashMap<>();
         response.put("numberOfTopicsInEachCategory", numberOfTopicsInEachCategory);

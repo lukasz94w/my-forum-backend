@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class PostDto {
-    private Long id;
-    private String content;
-    private String user;
+public class PostDto2 {
+    private Long topicId;
+    private String topicTitle;
+    private String topicCategory;
     private LocalDateTime dateTime;
-    private byte[] profilePic;
+    private String content;
     private int number;
 }

@@ -8,15 +8,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.model.Role;
 import pl.lukasz94w.myforum.model.User;
+import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
+import pl.lukasz94w.myforum.repository.RoleRepository;
+import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.LoginRequest;
 import pl.lukasz94w.myforum.request.SignupRequest;
 import pl.lukasz94w.myforum.response.JwtResponse;
 import pl.lukasz94w.myforum.response.MessageResponse;
-import pl.lukasz94w.myforum.repository.RoleRepository;
-import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
@@ -31,20 +31,20 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder encoder;
+    private final JwtUtils jwtUtils;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
+    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -119,4 +119,5 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
 }
