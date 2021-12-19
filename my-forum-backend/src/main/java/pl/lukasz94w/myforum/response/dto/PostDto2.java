@@ -13,4 +13,5 @@ public class PostDto2 {
     private String topicCategory;
     private LocalDateTime dateTime;
     private String content;
+    private int number;
 }

@@ -27,6 +27,9 @@ public class Post {
 
     private LocalDateTime dateTime = LocalDateTime.now();
 
+    @NonNull
+    private int number;
+
     @ManyToOne (fetch = FetchType.EAGER)
     @NonNull
     @NotNull

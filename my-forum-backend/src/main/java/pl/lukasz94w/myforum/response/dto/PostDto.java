@@ -13,4 +13,5 @@ public class PostDto {
     private String user;
     private LocalDateTime dateTime;
     private byte[] profilePic;
+    private int number;
 }
