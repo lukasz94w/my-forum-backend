@@ -3,10 +3,13 @@ package pl.lukasz94w.myforum.response.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor
 public class UserDto {
-    private Long id;
-    private String username;
-    private String surname;
+    private String name;
+    private String email;
+    private byte[] profilePic;
+    private LocalDateTime registered;
 }

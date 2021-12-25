@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.lukasz94w.myforum.request.ChangePasswordRequest;
 import pl.lukasz94w.myforum.response.MessageResponse;
+import pl.lukasz94w.myforum.response.dto.UserDto;
 import pl.lukasz94w.myforum.service.UserService;
 
 import javax.validation.Valid;
@@ -36,6 +37,11 @@ public class UserController {
         return userService.getProfilePic(authentication);
     }
 
+    @GetMapping("/getUserInfo/{username}")
+    public UserDto getUserInfo(@PathVariable String username) {
+        return userService.getUserInfo(username);
+    }
+
     @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
     @PostMapping("/changePassword")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request, Authentication authentication) {
@@ -45,6 +51,11 @@ public class UserController {
     @GetMapping("/findPageablePostsByUser")
     public Map<String, Object> findPageablePostsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
         return userService.findPageablePostsByUser(page, username);
+    }
+
+    @GetMapping("/findPageableTopicsByUser")
+    public Map<String, Object> findPageableTopicsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
+        return userService.findPageableTopicsByUser(page, username);
     }
 
 }

@@ -42,7 +42,7 @@ public class PostService {
         this.topicRepository = topicRepository;
     }
 
-    public PostDto addPostConstructor(Post post) {
+    public PostDto savePostForTestConstructor(Post post) {
         postRepository.save(post);
         return MapperDto.mapToPostDto(post);
     }

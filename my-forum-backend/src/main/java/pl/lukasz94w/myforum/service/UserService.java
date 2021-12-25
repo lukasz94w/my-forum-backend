@@ -13,19 +13,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.ProfilePic;
+import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.repository.PostRepository;
 import pl.lukasz94w.myforum.repository.ProfilePicRepository;
+import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.response.dto.PostDto2;
+import pl.lukasz94w.myforum.response.dto.TopicDto2;
+import pl.lukasz94w.myforum.response.dto.UserDto;
 import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
+import pl.lukasz94w.myforum.service.util.TopicServiceUtil;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.prepareLastActivitiesInPageableTopics;
+import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.prepareNumberOfAnswersInPageableTopics;
 
 @Service
 public final class UserService {
@@ -34,13 +43,19 @@ public final class UserService {
     private final ProfilePicRepository profilePicRepository;
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TopicRepository topicRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, ProfilePicRepository profilePicRepository, PostRepository postRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       ProfilePicRepository profilePicRepository,
+                       PostRepository postRepository,
+                       PasswordEncoder passwordEncoder,
+                       TopicRepository topicRepository) {
         this.userRepository = userRepository;
         this.profilePicRepository = profilePicRepository;
         this.postRepository = postRepository;
         this.passwordEncoder = passwordEncoder;
+        this.topicRepository = topicRepository;
     }
 
     public User findUserByUsername(String username) {
@@ -113,5 +128,37 @@ public final class UserService {
         response.put("totalPages", pageablePosts.getTotalPages());
 
         return response;
+    }
+
+    public Map<String, Object> findPageableTopicsByUser(int page, String username) {
+        User user = userRepository.findByName(username);
+        Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
+        Page<Topic> pageableTopics = topicRepository.findByUser(user, paging);
+
+        List<Topic> listOfLatest10Topics = pageableTopics.getContent();
+        Collection<TopicDto2> pageableTopicsDto = listOfLatest10Topics.stream()
+                .map(MapperDto::mapToTopicDto2)
+                .collect(Collectors.toList());
+
+        List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
+        List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
+        List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
+
+        List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
+        List<TopicServiceUtil.LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("pageableTopics", pageableTopicsDto);
+        response.put("numberOfPostsInPageableTopics", numberOfAnswersInPageableTopics);
+        response.put("lastPageableTopicActivities", lastPageableTopicActivities);
+        response.put("currentPage", pageableTopics.getNumber());
+        response.put("totalTopics", pageableTopics.getTotalElements());
+        response.put("totalPages", pageableTopics.getTotalPages());
+
+        return response;
+    }
+
+    public UserDto getUserInfo(String username) {
+        return MapperDto.mapToUserDto(userRepository.findByName(username));
     }
 }

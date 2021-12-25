@@ -94,10 +94,10 @@ public class TopicService {
     }
 
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {
-
         Category chosenCategory = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.valueOf(category.toUpperCase(Locale.ROOT)));
         Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findTopicsByCategory(chosenCategory, paging);
+
         List<Topic> listOfLatest10Topics = pageableTopics.getContent();
         Collection<TopicDto> pageableTopicsDto = listOfLatest10Topics.stream()
                 .map(MapperDto::mapToTopicDto)
@@ -107,7 +107,8 @@ public class TopicService {
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
         List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
 
-        List<Post> listOfLatestPosts = postRepository.findLatestPostsInPageableTopics(listOfTopicIds, chosenCategory);
+//        List<Post> listOfLatestPosts = postRepository.findLatestPostsInPageableTopics(listOfTopicIds, chosenCategory);
+        List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
         List<LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
