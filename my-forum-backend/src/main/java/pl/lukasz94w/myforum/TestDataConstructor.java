@@ -70,6 +70,8 @@ public class TestDataConstructor {
         userService.saveUser(user5);
         User admin = new User("admin", "admin@gmail.com", passwordEncoder.encode("admin"), rolesForAdmin);
         userService.saveUser(admin);
+        User lukasz94w = new User("lukasz94w", "lukasz94w@wp.pl", passwordEncoder.encode("lukasz94w"), rolesForUser);
+        userService.saveUser(lukasz94w);
 
         //CATEGORIES
         categoryRepository.save(new Category(EnumeratedCategory.PROGRAMMING));
@@ -85,7 +87,7 @@ public class TestDataConstructor {
         Category electronic = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.ELECTRONIC);
 
         //TOPICS AND POSTS
-        for (int i = 0; i <= 100; i++) {
+        for (int i = 0; i <= 1; i++) {
             Topic topic1 = new Topic("Kupno telewizora za 2000zl TOPIC 1", user1, electronic);
             topicRepository.save(topic1);
             createCommentsForTopic(topic1, user1, user2, user3, user4, user5, admin, user1);

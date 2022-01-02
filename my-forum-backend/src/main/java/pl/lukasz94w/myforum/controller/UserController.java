@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lukasz94w.myforum.request.ChangePasswordRequest;
+import pl.lukasz94w.myforum.request.ChangePasswordThroughUserSettings;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.response.dto.UserDto;
 import pl.lukasz94w.myforum.service.UserService;
@@ -44,8 +44,8 @@ public class UserController {
 
     @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
     @PostMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request, Authentication authentication) {
-        return userService.changePassword(request.getCurrentPassword(), request.getNewPassword(), authentication);
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordThroughUserSettings request, Authentication authentication) {
+        return userService.changePasswordThroughUserSettings(request.getCurrentPassword(), request.getNewPassword(), authentication);
     }
 
     @GetMapping("/findPageablePostsByUser")

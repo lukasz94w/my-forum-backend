@@ -13,12 +13,15 @@ import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
+import pl.lukasz94w.myforum.request.ChangePasswordThroughEmail;
 import pl.lukasz94w.myforum.request.LoginRequest;
+import pl.lukasz94w.myforum.request.SendResetEmailRequest;
 import pl.lukasz94w.myforum.request.SignupRequest;
 import pl.lukasz94w.myforum.response.JwtResponse;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
+import pl.lukasz94w.myforum.service.UserService;
 
 import javax.validation.Valid;
 import java.util.HashSet;
@@ -32,18 +35,25 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
+    //this shouldn't have been repository classes, rather service...
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
+    private final UserService userService;
+
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+    public AuthController(
+            AuthenticationManager authenticationManager, UserRepository userRepository,
+            RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils,
+            UserService userService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
+        this.userService = userService;
     }
 
     @PostMapping("/signin")
@@ -118,6 +128,16 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PostMapping("/sendEmailWithResetToken")
+    public void sendEmailWithResetToken(@Valid @RequestBody SendResetEmailRequest sendResetEmailRequest) {
+        userService.sendEmailWithResetToken(sendResetEmailRequest);
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordThroughEmail changePasswordThroughEmail) {
+        return userService.changePasswordThroughEmail(changePasswordThroughEmail);
     }
 
 }
