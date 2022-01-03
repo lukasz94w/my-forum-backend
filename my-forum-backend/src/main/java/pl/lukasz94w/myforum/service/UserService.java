@@ -1,8 +1,5 @@
 package pl.lukasz94w.myforum.service;
 
-import net.bytebuddy.utility.RandomString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,25 +8,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lukasz94w.myforum.exception.UserNotFoundException;
 import pl.lukasz94w.myforum.model.*;
 import pl.lukasz94w.myforum.repository.*;
 import pl.lukasz94w.myforum.request.ChangePasswordThroughEmail;
-import pl.lukasz94w.myforum.request.SendResetEmailRequest;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.response.dto.PostDto2;
 import pl.lukasz94w.myforum.response.dto.TopicDto2;
 import pl.lukasz94w.myforum.response.dto.UserDto;
 import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
-import pl.lukasz94w.myforum.service.util.MailUtil;
 import pl.lukasz94w.myforum.service.util.TopicServiceUtil;
 
-import javax.mail.MessagingException;
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,7 +36,6 @@ import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.prepareNumberOf
 @Service
 public final class UserService {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final ProfilePicRepository profilePicRepository;
     private final PostRepository postRepository;
@@ -71,7 +63,7 @@ public final class UserService {
 
     public User findUserByUsername(String username) {
         return userRepository.findUserByName(username).orElseThrow(
-                () -> new UserNotFoundException("User with that name not found")
+                () -> new UsernameNotFoundException("User with that name not found")
         );
     }
 
@@ -178,47 +170,7 @@ public final class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
-                () -> new UserNotFoundException("User with this email not found")
+                () -> new UsernameNotFoundException("User with this email not found")
         );
-    }
-
-    public void sendEmailWithResetToken(SendResetEmailRequest sendResetEmailRequest) {
-        String userEmail = sendResetEmailRequest.getEmail();
-        try {
-            User userFoundedByEmail = findByEmail(sendResetEmailRequest.getEmail());
-            String token = RandomString.make(30);
-            String resetPasswordLink = MailUtil.constructResetPasswordLink(token);
-            this.passwordTokenRepository.save(new PasswordToken(userFoundedByEmail, token));
-            this.mailService.sendMail(userEmail, resetPasswordLink);
-        } catch (UserNotFoundException exception) {
-            //application doesn't return result if the user with
-            //such email exist, so app can f.e. log this event for information purposes
-            logger.error(exception.getMessage());
-        } catch (MessagingException | UnsupportedEncodingException exception) {
-            logger.error(exception.getMessage());
-        }
-    }
-
-    public ResponseEntity<?> changePasswordThroughEmail(ChangePasswordThroughEmail changePasswordThroughEmail) {
-
-        PasswordToken passwordToken = passwordTokenRepository.findByToken(changePasswordThroughEmail.getReceivedToken());
-        if (passwordToken == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(new MessageResponse("Token not found"));
-        }
-        if (passwordToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return ResponseEntity
-                    .status(HttpStatus.GONE)
-                    .body(new MessageResponse("Token expired!"));
-        }
-
-        User user = userRepository.findByName(passwordToken.getUser().getName());
-        user.setPassword(passwordEncoder.encode(changePasswordThroughEmail.getNewPassword()));
-        userRepository.save(user);
-
-        return ResponseEntity
-                .ok()
-                .body(new MessageResponse("Password changed successfully"));
     }
 }
