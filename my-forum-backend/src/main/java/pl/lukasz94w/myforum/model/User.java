@@ -49,4 +49,6 @@ public final class User {
     private ProfilePic profilePic;
 
     private LocalDateTime registered = LocalDateTime.now();
+
+    private boolean enabled = false;
 }

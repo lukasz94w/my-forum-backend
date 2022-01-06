@@ -25,6 +25,8 @@ public class JwtUtils {
 
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
+        //TODO a i tutaj enabled bede w jakims scope przesylac!
+
         Claims claims = Jwts.claims();
         claims.setSubject(userPrincipal.getUsername());
         claims.put("scope", userPrincipal.getAuthorities().stream().map(Object::toString).collect(Collectors.toList()));

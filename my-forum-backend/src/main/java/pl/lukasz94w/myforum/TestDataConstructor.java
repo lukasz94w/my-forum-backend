@@ -44,10 +44,8 @@ public class TestDataConstructor {
         roleRepository.save(new Role(EnumeratedRole.ROLE_USER));
         roleRepository.save(new Role(EnumeratedRole.ROLE_ADMIN));
 
-        Role userRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        Role adminRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_ADMIN)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        Role userRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_USER);
+        Role adminRole = roleRepository.findByEnumeratedRole(EnumeratedRole.ROLE_ADMIN);
 
         Set<Role> rolesForUser = new HashSet<>() {{
             add(userRole);
@@ -59,17 +57,26 @@ public class TestDataConstructor {
 
         //USERS
         User user1 = new User("user1", "user1@gmail.com", passwordEncoder.encode("user1"), rolesForUser);
+        user1.setEnabled(true);
         userService.saveUser(user1);
         User user2 = new User("user2", "user2@gmail.com", passwordEncoder.encode("user2"), rolesForUser);
+        user2.setEnabled(true);
         userService.saveUser(user2);
         User user3 = new User("user3", "user3@gmail.com", passwordEncoder.encode("user3"), rolesForUser);
+        user3.setEnabled(true);
         userService.saveUser(user3);
         User user4 = new User("user4", "user4@gmail.com", passwordEncoder.encode("user4"), rolesForUser);
+        user4.setEnabled(true);
         userService.saveUser(user4);
         User user5 = new User("user5", "user5@gmail.com", passwordEncoder.encode("user5"), rolesForUser);
+        user5.setEnabled(true);
         userService.saveUser(user5);
         User admin = new User("admin", "admin@gmail.com", passwordEncoder.encode("admin"), rolesForAdmin);
+        admin.setEnabled(false);
         userService.saveUser(admin);
+        User lukasz94w = new User("lukasz94w", "lukasz94w@wp.pl", passwordEncoder.encode("lukasz94w"), rolesForUser);
+        lukasz94w.setEnabled(true);
+        userService.saveUser(lukasz94w);
 
         //CATEGORIES
         categoryRepository.save(new Category(EnumeratedCategory.PROGRAMMING));
@@ -85,7 +92,7 @@ public class TestDataConstructor {
         Category electronic = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.ELECTRONIC);
 
         //TOPICS AND POSTS
-        for (int i = 0; i <= 100; i++) {
+        for (int i = 0; i <= 1; i++) {
             Topic topic1 = new Topic("Kupno telewizora za 2000zl TOPIC 1", user1, electronic);
             topicRepository.save(topic1);
             createCommentsForTopic(topic1, user1, user2, user3, user4, user5, admin, user1);

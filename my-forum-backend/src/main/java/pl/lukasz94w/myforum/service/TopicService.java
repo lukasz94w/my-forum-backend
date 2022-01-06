@@ -19,8 +19,8 @@ import pl.lukasz94w.myforum.repository.PostRepository;
 import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.NewTopicContent;
-import pl.lukasz94w.myforum.response.dto.TopicDto;
-import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
+import pl.lukasz94w.myforum.response.TopicDto;
+import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
 import java.util.*;

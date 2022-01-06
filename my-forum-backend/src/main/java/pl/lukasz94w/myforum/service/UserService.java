@@ -8,22 +8,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lukasz94w.myforum.model.Post;
-import pl.lukasz94w.myforum.model.ProfilePic;
-import pl.lukasz94w.myforum.model.Topic;
-import pl.lukasz94w.myforum.model.User;
-import pl.lukasz94w.myforum.repository.PostRepository;
-import pl.lukasz94w.myforum.repository.ProfilePicRepository;
-import pl.lukasz94w.myforum.repository.TopicRepository;
-import pl.lukasz94w.myforum.repository.UserRepository;
+import pl.lukasz94w.myforum.model.*;
+import pl.lukasz94w.myforum.repository.*;
 import pl.lukasz94w.myforum.response.MessageResponse;
-import pl.lukasz94w.myforum.response.dto.PostDto2;
-import pl.lukasz94w.myforum.response.dto.TopicDto2;
-import pl.lukasz94w.myforum.response.dto.UserDto;
-import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
+import pl.lukasz94w.myforum.response.PostDto2;
+import pl.lukasz94w.myforum.response.TopicDto2;
+import pl.lukasz94w.myforum.response.UserDto;
+import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.util.TopicServiceUtil;
 
@@ -44,23 +39,29 @@ public final class UserService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
     private final TopicRepository topicRepository;
+    private final PasswordTokenRepository passwordTokenRepository;
+    private final MailService mailService;
 
     @Autowired
     public UserService(UserRepository userRepository,
                        ProfilePicRepository profilePicRepository,
                        PostRepository postRepository,
                        PasswordEncoder passwordEncoder,
-                       TopicRepository topicRepository) {
+                       TopicRepository topicRepository,
+                       PasswordTokenRepository passwordTokenRepository,
+                       MailService mailService) {
         this.userRepository = userRepository;
         this.profilePicRepository = profilePicRepository;
         this.postRepository = postRepository;
         this.passwordEncoder = passwordEncoder;
         this.topicRepository = topicRepository;
+        this.passwordTokenRepository = passwordTokenRepository;
+        this.mailService = mailService;
     }
 
     public User findUserByUsername(String username) {
         return userRepository.findUserByName(username).orElseThrow(
-                () -> new RuntimeException("Hello") //TODO implement my custom Exception
+                () -> new UsernameNotFoundException("User with that name not found")
         );
     }
 
@@ -91,13 +92,13 @@ public final class UserService {
             ProfilePic profilePic = profilePicRepository.save(new ProfilePic(authenticatedUser.getId(), image.getBytes()));
             authenticatedUser.setProfilePic(profilePic);
             userRepository.save(authenticatedUser);
-            return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Good"));
+            return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Image changed"));
         } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new MessageResponse("Bad!"));
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new MessageResponse("Error during changing"));
         }
     }
 
-    public ResponseEntity<?> changePassword(String currentPassword, String newPassword, Authentication authentication) {
+    public ResponseEntity<?> changePasswordThroughUserSettings(String currentPassword, String newPassword, Authentication authentication) {
 
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
@@ -105,9 +106,12 @@ public final class UserService {
         if (passwordEncoder.matches(currentPassword, authenticatedUser.getPassword())) {
             authenticatedUser.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(authenticatedUser);
-            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+            return ResponseEntity
+                    .ok(new MessageResponse("Password changed successfully"));
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Current password is not correct"));
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Current password is not correct"));
         }
     }
 
@@ -160,5 +164,11 @@ public final class UserService {
 
     public UserDto getUserInfo(String username) {
         return MapperDto.mapToUserDto(userRepository.findByName(username));
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException("User with this email not found")
+        );
     }
 }
