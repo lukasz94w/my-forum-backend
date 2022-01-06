@@ -7,4 +7,10 @@ public final class MailUtil {
         String tokenWithValue = "?token=" + token;
         return serverUrl + apiName + tokenWithValue;
     }
+
+    public static String constructConfirmLink(String token, String serverUrl) {
+        String apiName = "/auth/activate";
+        String tokenWithValue = "?token=" + token;
+        return serverUrl + apiName + tokenWithValue;
+    }
 }

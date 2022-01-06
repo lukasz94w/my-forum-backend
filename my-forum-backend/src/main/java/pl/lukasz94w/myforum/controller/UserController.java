@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.lukasz94w.myforum.request.ChangePasswordThroughUserSettings;
 import pl.lukasz94w.myforum.response.MessageResponse;
-import pl.lukasz94w.myforum.response.dto.UserDto;
+import pl.lukasz94w.myforum.response.UserDto;
 import pl.lukasz94w.myforum.service.UserService;
 
 import javax.validation.Valid;

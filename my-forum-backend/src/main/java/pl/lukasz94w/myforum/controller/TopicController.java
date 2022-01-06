@@ -7,7 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pl.lukasz94w.myforum.request.NewTopicContent;
-import pl.lukasz94w.myforum.response.dto.TopicDto;
+import pl.lukasz94w.myforum.response.TopicDto;
 import pl.lukasz94w.myforum.service.TopicService;
 
 import javax.validation.Valid;

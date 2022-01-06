@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public final class Topic {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NonNull
@@ -25,7 +25,7 @@ public final class Topic {
     @Size(min = 5, max = 100)
     private String title;
 
-    @ManyToOne (fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
     @NonNull
     @JoinColumn(name = "user_id")

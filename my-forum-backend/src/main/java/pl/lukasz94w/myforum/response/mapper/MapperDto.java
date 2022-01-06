@@ -1,7 +1,7 @@
-package pl.lukasz94w.myforum.response.dto.mapper;
+package pl.lukasz94w.myforum.response.mapper;
 
 import pl.lukasz94w.myforum.model.ProfilePic;
-import pl.lukasz94w.myforum.response.dto.*;
+import pl.lukasz94w.myforum.response.*;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;

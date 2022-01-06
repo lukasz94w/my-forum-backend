@@ -11,6 +11,7 @@ import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.service.AuthService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -40,8 +41,18 @@ public class AuthController {
     }
 
     @PostMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordThroughEmail changePasswordThroughEmail) {
+    public ResponseEntity<?> changePasswordThroughEmail(@Valid @RequestBody ChangePasswordThroughEmail changePasswordThroughEmail) {
         return authService.changePasswordThroughEmail(changePasswordThroughEmail);
+    }
+
+    @GetMapping("/activateAccount")
+    public ResponseEntity<?> activateAccount(@RequestParam @Size(min = 30, max = 30) String activationToken) {
+        return authService.activateAccount(activationToken);
+    }
+
+    @GetMapping("/resendActivationToken")
+    public ResponseEntity<?> resendActivationToken(@RequestParam @Size(min = 30, max = 30) String oldExpiredToken) {
+        return authService.resendActivationToken(oldExpiredToken);
     }
 
 }

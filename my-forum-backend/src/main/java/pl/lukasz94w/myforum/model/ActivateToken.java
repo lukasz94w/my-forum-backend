@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Getter
-public final class PasswordToken {
+public class ActivateToken {
 
     @Transient
     private final int EXPIRATION_TIME_IN_HOURS = 24;

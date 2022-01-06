@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.response.dto;
+package pl.lukasz94w.myforum.response;
 
 import lombok.Getter;
 
