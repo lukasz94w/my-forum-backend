@@ -72,7 +72,7 @@ public class TestDataConstructor {
         user5.setEnabled(true);
         userService.saveUser(user5);
         User admin = new User("admin", "admin@gmail.com", passwordEncoder.encode("admin"), rolesForAdmin);
-        admin.setEnabled(false);
+        admin.setEnabled(true);
         userService.saveUser(admin);
         User lukasz94w = new User("lukasz94w", "lukasz94w@wp.pl", passwordEncoder.encode("lukasz94w"), rolesForUser);
         lukasz94w.setEnabled(true);

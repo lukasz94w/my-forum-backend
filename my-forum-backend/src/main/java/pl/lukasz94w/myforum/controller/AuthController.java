@@ -1,12 +1,11 @@
 package pl.lukasz94w.myforum.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pl.lukasz94w.myforum.request.ChangePasswordThroughEmail;
-import pl.lukasz94w.myforum.request.LoginRequest;
-import pl.lukasz94w.myforum.request.SendResetEmailRequest;
-import pl.lukasz94w.myforum.request.SignupRequest;
+import pl.lukasz94w.myforum.request.*;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.service.AuthService;
 
@@ -33,6 +32,11 @@ public class AuthController {
     @PostMapping("/signIn")
     public ResponseEntity<?> signIn(@Valid @RequestBody LoginRequest loginRequest) {
         return authService.signIn(loginRequest);
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return authService.refreshToken(refreshTokenRequest);
     }
 
     @PostMapping("/sendEmailWithResetToken")
