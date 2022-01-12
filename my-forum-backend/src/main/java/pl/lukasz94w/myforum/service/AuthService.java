@@ -16,24 +16,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.lukasz94w.myforum.model.ActivateToken;
-import pl.lukasz94w.myforum.model.PasswordToken;
-import pl.lukasz94w.myforum.model.Role;
-import pl.lukasz94w.myforum.model.User;
+import pl.lukasz94w.myforum.exception.RefreshTokenException;
+import pl.lukasz94w.myforum.model.*;
 import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.repository.ActivateTokenRepository;
 import pl.lukasz94w.myforum.repository.PasswordTokenRepository;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
-import pl.lukasz94w.myforum.request.ChangePasswordThroughEmail;
-import pl.lukasz94w.myforum.request.LoginRequest;
-import pl.lukasz94w.myforum.request.SendResetEmailRequest;
-import pl.lukasz94w.myforum.request.SignupRequest;
+import pl.lukasz94w.myforum.request.*;
 import pl.lukasz94w.myforum.response.JwtResponse;
 import pl.lukasz94w.myforum.response.MessageResponse;
+import pl.lukasz94w.myforum.response.RefreshTokenResponse;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
-import pl.lukasz94w.myforum.service.util.MailUtil;
+import pl.lukasz94w.myforum.service.util.MailServiceUtil;
 
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
@@ -56,6 +52,7 @@ public class AuthService {
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
     private final ActivateTokenRepository activateTokenRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${pl.lukasz94w.serverAddress}")
     private String serverUrl;
@@ -63,7 +60,8 @@ public class AuthService {
     public AuthService(AuthenticationManager authenticationManager, RoleRepository roleRepository,
                        UserRepository userRepository, PasswordEncoder encoder, JwtUtils jwtUtils,
                        PasswordTokenRepository passwordTokenRepository, MailService mailService,
-                       PasswordEncoder passwordEncoder, ActivateTokenRepository activateTokenRepository) {
+                       PasswordEncoder passwordEncoder, ActivateTokenRepository activateTokenRepository,
+                       RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -73,6 +71,7 @@ public class AuthService {
         this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
         this.activateTokenRepository = activateTokenRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public ResponseEntity<MessageResponse> signUp(SignupRequest signUpRequest) {
@@ -99,7 +98,7 @@ public class AuthService {
         userRepository.save(user);
 
         String token = RandomString.make(30);
-        String confirmLink = MailUtil.constructConfirmLink(token, serverUrl);
+        String confirmLink = MailServiceUtil.constructConfirmLink(token, serverUrl);
         try {
             mailService.sendActivateAccountEmail(signUpRequest.getEmail(), confirmLink); // it can also be done using @Async or by publishing event
             activateTokenRepository.save(new ActivateToken(user, token));
@@ -125,21 +124,41 @@ public class AuthService {
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        String jwtAccessToken = jwtUtils.generateJwtAccessToken(userDetails);
         int expirationTimeInSeconds = jwtUtils.getExpirationTimeInSeconds();
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponse(jwt,
+        RefreshToken jwtRefreshToken = refreshTokenService.createJwtRefreshToken(userDetails.getId());
+
+        return ResponseEntity.ok(new JwtResponse(
+                jwtAccessToken,
+                jwtRefreshToken.getToken(),
                 expirationTimeInSeconds,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 userDetails.isEnabled(),
                 roles));
+    }
+
+    public ResponseEntity<?> refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        logger.warn("Access token expired, asking for new one");
+        String requestRefreshToken = refreshTokenRequest.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String newAccessToken = jwtUtils.generateTokenFromUserName(user.getName());
+                    return ResponseEntity
+                            .ok(new RefreshTokenResponse(newAccessToken, requestRefreshToken));
+                })
+                .orElseThrow(() -> new RefreshTokenException(requestRefreshToken, "Refresh token not found"));
     }
 
     public void sendEmailWithResetToken(SendResetEmailRequest sendResetEmailRequest) {
@@ -149,7 +168,7 @@ public class AuthService {
                     () -> new UsernameNotFoundException("User not found with email: " + sendResetEmailRequest.getEmail()));
 
             String token = RandomString.make(30);
-            String resetPasswordLink = MailUtil.constructResetPasswordLink(token, serverUrl);
+            String resetPasswordLink = MailServiceUtil.constructResetPasswordLink(token, serverUrl);
 
             PasswordToken passwordToken = passwordTokenRepository.findByUser(userFoundedByEmail);
             if (passwordToken == null) {
@@ -223,7 +242,7 @@ public class AuthService {
         String newToken = RandomString.make(30);
         activateToken.setNewToken(newToken);
         activateToken.setNewExpirationDateOfToken();
-        String confirmLink = MailUtil.constructConfirmLink(newToken, serverUrl);
+        String confirmLink = MailServiceUtil.constructConfirmLink(newToken, serverUrl);
         try {
             mailService.sendActivateAccountEmail(activateToken.getUser().getEmail(), confirmLink);
             activateTokenRepository.save(activateToken);
