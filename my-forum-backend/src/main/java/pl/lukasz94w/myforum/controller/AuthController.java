@@ -1,9 +1,7 @@
 package pl.lukasz94w.myforum.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.lukasz94w.myforum.request.*;
 import pl.lukasz94w.myforum.response.MessageResponse;

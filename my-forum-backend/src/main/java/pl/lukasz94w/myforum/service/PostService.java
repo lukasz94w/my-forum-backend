@@ -31,9 +31,9 @@ import java.util.stream.Collectors;
 @Service
 public class PostService {
 
-    PostRepository postRepository;
-    UserRepository userRepository;
-    TopicRepository topicRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final TopicRepository topicRepository;
 
     @Autowired
     public PostService(PostRepository postRepository, UserRepository userRepository, TopicRepository topicRepository) {

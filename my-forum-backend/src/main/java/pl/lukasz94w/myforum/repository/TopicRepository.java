@@ -17,12 +17,6 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
 
     Page<Topic> findTopicsByCategory(Category category, Pageable pageable);
 
-    Integer countTopicByCategory(Category category);
-
-//    this query will return a List<CategoriesDto> (automatically mapping), attributes: long count, Category categoryName
-//    @Query(value = "select new pl.lukasz94w.myforum.model.CategoriesDto(count(topic.category), topic.category) FROM Topic topic group by topic.category")
-//    List<CategoriesDto> countByCategoryList();
-
     //this query will return List<Object[]>
     @Query(value = "select count(topic.category), topic.category FROM Topic topic group by topic.category")
     List<Object[]> countTopicsByCategories();

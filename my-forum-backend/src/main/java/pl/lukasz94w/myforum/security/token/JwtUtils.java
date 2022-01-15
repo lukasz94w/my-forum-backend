@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
 import java.util.Date;
 
@@ -17,39 +16,27 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${pl.lukasz94w.jwtAccessTokenExpirationTimeInMs}")
-    private int jwtExpirationMs;
+    private int jwtAccessTokenExpirationTimeInMs;
 
-    // TODO w sumie mozna to w sekundach przesylac i wtedy nie trzeba bedzie konwertowac tego we froncie!
     @Value("${pl.lukasz94w.jwtRefreshTokenExpirationTimeInMs}")
     private int jwtRefreshTokenExpirationTimeInMs;
 
-    public String generateJwtAccessToken(UserDetailsImpl userPrincipal) {
-        return generateTokenFromUserName(userPrincipal.getUsername());
-    }
-
-    public String generateTokenFromUserName(String userName) {
-
-        //poza tym tu nie bedzie raczej z username tylko z calego usera
-        //wtedy trzeba bedzie dawac
-        //                 .map(user -> {
-        //                    String token = jwtUtils.generateTokenFromUserDetails(user!!!!)
-        //                })
-        //TODO a i tutaj enabled bede w jakims scope przesylac!
-        Claims claims = Jwts.claims();
-        claims.setSubject(userName);
-//        claims.put("scope", userDetails.getAuthorities().stream().map(Object::toString).collect(Collectors.toList()));
-
+    public String generateJwtAccessToken(String userName) {
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(userName)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtRefreshTokenExpirationTimeInMs))
+                .setExpiration(new Date(new Date().getTime() + jwtAccessTokenExpirationTimeInMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
-    public int getExpirationTimeInSeconds() {
-        return jwtRefreshTokenExpirationTimeInMs / 1000;
+    public String generateJwtRefreshToken(String userName) {
+        return Jwts.builder()
+                .setSubject(userName)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(new Date().getTime() + jwtRefreshTokenExpirationTimeInMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
     }
 
     public String getUserNameFromJwtToken(String token) {

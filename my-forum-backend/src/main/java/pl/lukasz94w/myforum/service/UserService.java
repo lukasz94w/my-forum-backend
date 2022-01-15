@@ -165,10 +165,4 @@ public final class UserService {
     public UserDto getUserInfo(String username) {
         return MapperDto.mapToUserDto(userRepository.findByName(username));
     }
-
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException("User with this email not found")
-        );
-    }
 }

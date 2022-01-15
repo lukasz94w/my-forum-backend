@@ -31,10 +31,10 @@ import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.*;
 @Service
 public class TopicService {
 
-    TopicRepository topicRepository;
-    CategoryRepository categoryRepository;
-    UserRepository userRepository;
-    PostRepository postRepository;
+    private final TopicRepository topicRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
 
     @Autowired
     public TopicService(TopicRepository topicRepository, CategoryRepository categoryRepository, UserRepository userRepository, PostRepository postRepository) {
@@ -65,10 +65,6 @@ public class TopicService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public Topic findTopicById(final Long id) {
-        return topicRepository.findTopicById(id);
-    }
-
     public TopicDto getTopicById(final Long id) {
         return MapperDto.mapToTopicDto(topicRepository.getById(id));
     }
@@ -79,18 +75,6 @@ public class TopicService {
         return topics.stream()
                 .map(MapperDto::mapToTopicDto)
                 .collect(Collectors.toList());
-    }
-
-    public Integer countTopicByCategory(Category category) {
-        return topicRepository.countTopicByCategory(category);
-    }
-
-    public List<Object[]> countByCategoryList() {
-        return topicRepository.countTopicsByCategories();
-    }
-
-    public List<Topic> findLatestTopicInEachCategory() {
-        return topicRepository.findLatestTopicInEachCategory();
     }
 
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {
@@ -107,7 +91,6 @@ public class TopicService {
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
         List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
 
-//        List<Post> listOfLatestPosts = postRepository.findLatestPostsInPageableTopics(listOfTopicIds, chosenCategory);
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
         List<LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
 
