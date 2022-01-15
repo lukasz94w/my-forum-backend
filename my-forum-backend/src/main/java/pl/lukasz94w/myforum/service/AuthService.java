@@ -16,17 +16,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.lukasz94w.myforum.exception.RefreshTokenException;
-import pl.lukasz94w.myforum.model.*;
+import pl.lukasz94w.myforum.model.ActivateToken;
+import pl.lukasz94w.myforum.model.PasswordToken;
+import pl.lukasz94w.myforum.model.Role;
+import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.repository.ActivateTokenRepository;
 import pl.lukasz94w.myforum.repository.PasswordTokenRepository;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.*;
-import pl.lukasz94w.myforum.response.JwtResponse;
 import pl.lukasz94w.myforum.response.MessageResponse;
-import pl.lukasz94w.myforum.response.RefreshTokenResponse;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.util.MailServiceUtil;
@@ -34,15 +34,13 @@ import pl.lukasz94w.myforum.service.util.MailServiceUtil;
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
@@ -52,7 +50,6 @@ public class AuthService {
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
     private final ActivateTokenRepository activateTokenRepository;
-    private final RefreshTokenService refreshTokenService;
 
     @Value("${pl.lukasz94w.serverAddress}")
     private String serverUrl;
@@ -60,8 +57,7 @@ public class AuthService {
     public AuthService(AuthenticationManager authenticationManager, RoleRepository roleRepository,
                        UserRepository userRepository, PasswordEncoder encoder, JwtUtils jwtUtils,
                        PasswordTokenRepository passwordTokenRepository, MailService mailService,
-                       PasswordEncoder passwordEncoder, ActivateTokenRepository activateTokenRepository,
-                       RefreshTokenService refreshTokenService) {
+                       PasswordEncoder passwordEncoder, ActivateTokenRepository activateTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -71,7 +67,6 @@ public class AuthService {
         this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
         this.activateTokenRepository = activateTokenRepository;
-        this.refreshTokenService = refreshTokenService;
     }
 
     public ResponseEntity<MessageResponse> signUp(SignupRequest signUpRequest) {
@@ -126,39 +121,27 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String jwtAccessToken = jwtUtils.generateJwtAccessToken(userDetails);
-        int expirationTimeInSeconds = jwtUtils.getExpirationTimeInSeconds();
+        String jwtAccessToken = jwtUtils.generateJwtAccessToken(userDetails.getUsername());
+        String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userDetails.getUsername());
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+        Map<String, String> authenticationResponse = new LinkedHashMap<>();
+        authenticationResponse.put("accessToken", jwtAccessToken);
+        authenticationResponse.put("refreshToken", jwtRefreshToken);
 
-        RefreshToken jwtRefreshToken = refreshTokenService.createJwtRefreshToken(userDetails.getId());
-
-        return ResponseEntity.ok(new JwtResponse(
-                jwtAccessToken,
-                jwtRefreshToken.getToken(),
-                expirationTimeInSeconds,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
-                userDetails.isEnabled(),
-                roles));
+        return ResponseEntity.ok(authenticationResponse);
     }
 
     public ResponseEntity<?> refreshToken(RefreshTokenRequest refreshTokenRequest) {
         logger.warn("Access token expired, asking for new one");
-        String requestRefreshToken = refreshTokenRequest.getRefreshToken();
+        String refreshToken = refreshTokenRequest.getRefreshToken();
 
-        return refreshTokenService.findByToken(requestRefreshToken)
-                .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUser)
-                .map(user -> {
-                    String newAccessToken = jwtUtils.generateTokenFromUserName(user.getName());
-                    return ResponseEntity
-                            .ok(new RefreshTokenResponse(newAccessToken, requestRefreshToken));
-                })
-                .orElseThrow(() -> new RefreshTokenException(requestRefreshToken, "Refresh token not found"));
+        if (jwtUtils.validateJwtToken(refreshToken) && jwtUtils.getUserNameFromJwtToken(refreshToken) != null) {
+            String userNameFromToken = jwtUtils.getUserNameFromJwtToken(refreshToken);
+            String newAccessToken = jwtUtils.generateJwtAccessToken(userNameFromToken);
+            return ResponseEntity.ok(Collections.singletonMap("accessToken", newAccessToken));
+        }
+
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
     public void sendEmailWithResetToken(SendResetEmailRequest sendResetEmailRequest) {

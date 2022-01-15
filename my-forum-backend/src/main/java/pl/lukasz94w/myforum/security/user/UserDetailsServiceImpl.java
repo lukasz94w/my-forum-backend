@@ -12,8 +12,12 @@ import pl.lukasz94w.myforum.repository.UserRepository;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
+    private final UserRepository userRepository;
+
     @Autowired
-    UserRepository userRepository;
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional
