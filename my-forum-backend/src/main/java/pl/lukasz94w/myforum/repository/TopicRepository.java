@@ -26,4 +26,6 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
     List<Topic> findLatestTopicInEachCategory();
 
     Page<Topic> findByUser(User user, Pageable pageable);
+
+    Page<Topic> findByTitleContainsIgnoreCase(String title, Pageable pageable);
 }
