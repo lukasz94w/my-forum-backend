@@ -61,4 +61,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByUser(User user, Pageable pageable);
 
     Integer countPostByTopic(Topic topic);
+
+    Page<Post> findByContentContainsIgnoreCase(String content, Pageable pageable);
 }

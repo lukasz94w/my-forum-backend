@@ -18,6 +18,7 @@ import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.NewPostContent;
 import pl.lukasz94w.myforum.response.PostDto;
+import pl.lukasz94w.myforum.response.PostDto2;
 import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
@@ -62,6 +63,7 @@ public class PostService {
     public Map<String, Object> findPageablePostsByTopicId(int page, Long id) {
         Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").ascending());
         Page<Post> pageablePosts = postRepository.findByTopicId(id, paging);
+
         Collection<PostDto> pageablePostsDto = pageablePosts.stream()
                 .map(MapperDto::mapToPostDto)
                 .collect(Collectors.toList());
@@ -92,5 +94,22 @@ public class PostService {
         postRepository.save(newPost);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    public Map<String, Object> searchInPosts(int page, String query) {
+        Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").descending());
+        Page<Post> pageablePosts = postRepository.findByContentContainsIgnoreCase(query, paging);
+
+        Collection<PostDto2> pageablePostsDto2 = pageablePosts.stream()
+                .map(MapperDto::mapToPostDto2)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("pageablePosts", pageablePostsDto2);
+        response.put("currentPage", pageablePosts.getNumber());
+        response.put("totalPosts", pageablePosts.getTotalElements());
+        response.put("totalPages", pageablePosts.getTotalPages());
+
+        return response;
     }
 }

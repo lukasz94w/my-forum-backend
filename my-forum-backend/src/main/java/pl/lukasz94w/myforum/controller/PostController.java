@@ -33,4 +33,9 @@ public class PostController {
     public ResponseEntity<Map<String, Object>> findPageablePostsByTopicId(@RequestParam(defaultValue = "0") int page, @RequestParam final Long id) {
         return new ResponseEntity<>(this.postService.findPageablePostsByTopicId(page, id), HttpStatus.OK);
     }
+
+    @GetMapping("searchInPosts")
+    public ResponseEntity<Map<String, Object>> searchInPosts(@RequestParam(defaultValue = "0") int page, @RequestParam String query) {
+        return new ResponseEntity<>(postService.searchInPosts(page, query), HttpStatus.OK);
+    }
 }
