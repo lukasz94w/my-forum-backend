@@ -25,7 +25,7 @@ public class TopicController {
         this.topicService = topicService;
     }
 
-    @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
+    @PreAuthorize("hasRole ('USER')")
     @PostMapping("/addTopic")
     public ResponseEntity<HttpStatus> createTopic(@Valid @RequestBody NewTopicContent newTopicContent, Authentication authentication) {
         return topicService.createTopic(newTopicContent, authentication);
@@ -44,16 +44,21 @@ public class TopicController {
 
     @GetMapping("/getTopics")
     public ResponseEntity<List<TopicDto>> getAllTopics() {
-        return new ResponseEntity<>(this.topicService.getAllTopics(), HttpStatus.OK);
+        return new ResponseEntity<>(topicService.getAllTopics(), HttpStatus.OK);
     }
 
     @GetMapping("/findPageableTopicsInCategory")
     public ResponseEntity<Map<String, Object>> findPageableTopicsInCategory(@RequestParam(defaultValue = "0") int page, @RequestParam String category) {
-        return new ResponseEntity<>(this.topicService.findPageableTopicsInCategory(page, category), HttpStatus.OK);
+        return new ResponseEntity<>(topicService.findPageableTopicsInCategory(page, category), HttpStatus.OK);
     }
 
     @GetMapping("/countTopicsAndPostsByCategory")
     public ResponseEntity<Map<String, Object>> countTopicsAndPostsByCategory() {
-        return new ResponseEntity<>(this.topicService.countTopicsAndPostsByCategory(), HttpStatus.OK);
+        return new ResponseEntity<>(topicService.countTopicsAndPostsByCategory(), HttpStatus.OK);
+    }
+
+    @GetMapping("/searchInTopicTitles")
+    public ResponseEntity<Map<String, Object>> searchInTopicTitles(@RequestParam(defaultValue = "0") int page, @RequestParam String query) {
+        return new ResponseEntity<>(topicService.searchInTopicTitles(page, query), HttpStatus.OK);
     }
 }

@@ -81,28 +81,7 @@ public class TopicService {
         Category chosenCategory = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.valueOf(category.toUpperCase(Locale.ROOT)));
         Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findTopicsByCategory(chosenCategory, paging);
-
-        List<Topic> listOfLatest10Topics = pageableTopics.getContent();
-        Collection<TopicDto> pageableTopicsDto = listOfLatest10Topics.stream()
-                .map(MapperDto::mapToTopicDto)
-                .collect(Collectors.toList());
-
-        List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
-        List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
-
-        List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("pageableTopics", pageableTopicsDto);
-        response.put("numberOfPostsInPageableTopics", numberOfAnswersInPageableTopics);
-        response.put("lastPageableTopicActivities", lastPageableTopicActivities);
-        response.put("currentPage", pageableTopics.getNumber());
-        response.put("totalTopics", pageableTopics.getTotalElements());
-        response.put("totalPages", pageableTopics.getTotalPages());
-
-        return response;
+        return buildResponse(pageableTopics);
     }
 
     public Map<String, Object> countTopicsAndPostsByCategory() {
@@ -141,6 +120,36 @@ public class TopicService {
         response.put("numberOfEntriesInGeneralSubjects", totalNumberOfEntriesInGeneralSubjects);
         response.put("numberOfEntriesInOtherSubjects", totalSumOfEntriesInOtherSubjects);
         response.put("lastTopicActivities", lastTopicActivities);
+
+        return response;
+    }
+
+    public Map<String, Object> searchInTopicTitles(int page, String query) {
+        Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
+        Page<Topic> pageableTopics = topicRepository.findByTitleContainsIgnoreCase(query, paging);
+        return buildResponse(pageableTopics);
+    }
+
+    private Map<String, Object> buildResponse(Page<Topic> pageableTopics) {
+        List<Topic> listOfLatest10Topics = pageableTopics.getContent();
+        Collection<TopicDto> pageableTopicsDto = listOfLatest10Topics.stream()
+                .map(MapperDto::mapToTopicDto2)
+                .collect(Collectors.toList());
+
+        List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
+        List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
+        List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
+
+        List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
+        List<LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("pageableTopics", pageableTopicsDto);
+        response.put("numberOfPostsInPageableTopics", numberOfAnswersInPageableTopics);
+        response.put("lastPageableTopicActivities", lastPageableTopicActivities);
+        response.put("currentPage", pageableTopics.getNumber());
+        response.put("totalTopics", pageableTopics.getTotalElements());
+        response.put("totalPages", pageableTopics.getTotalPages());
 
         return response;
     }

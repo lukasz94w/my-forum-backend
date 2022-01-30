@@ -20,9 +20,7 @@ public class Post {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     @NonNull
-    @Size(min = 5, max = 500)
     private String content;
 
     private LocalDateTime dateTime = LocalDateTime.now();
@@ -32,13 +30,11 @@ public class Post {
 
     @ManyToOne (fetch = FetchType.EAGER)
     @NonNull
-    @NotNull
     @JoinColumn(name = "topic_id")
     private Topic topic;
 
     @ManyToOne
     @NonNull
-    @NotNull
     @JoinColumn(name = "user_id")
     private User user;
 }

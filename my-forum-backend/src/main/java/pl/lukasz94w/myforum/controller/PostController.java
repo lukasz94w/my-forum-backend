@@ -23,7 +23,7 @@ public class PostController {
         this.postService = postService;
     }
 
-    @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
+    @PreAuthorize("hasRole ('USER')")
     @PostMapping("/addPost")
     public ResponseEntity<HttpStatus> addPost(@Valid @RequestBody NewPostContent newPostContent, Authentication authentication) {
         return postService.addPost(newPostContent, authentication);
@@ -32,5 +32,10 @@ public class PostController {
     @GetMapping("/findPageablePostsByTopicId")
     public ResponseEntity<Map<String, Object>> findPageablePostsByTopicId(@RequestParam(defaultValue = "0") int page, @RequestParam final Long id) {
         return new ResponseEntity<>(this.postService.findPageablePostsByTopicId(page, id), HttpStatus.OK);
+    }
+
+    @GetMapping("searchInPosts")
+    public ResponseEntity<Map<String, Object>> searchInPosts(@RequestParam(defaultValue = "0") int page, @RequestParam String query) {
+        return new ResponseEntity<>(postService.searchInPosts(page, query), HttpStatus.OK);
     }
 }

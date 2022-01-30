@@ -12,4 +12,6 @@ public class UserDto {
     private String email;
     private byte[] profilePic;
     private LocalDateTime registered;
+    private boolean isAdmin;
+    private boolean isBanned;
 }

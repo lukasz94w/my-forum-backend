@@ -4,9 +4,9 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 
 @Entity
@@ -21,20 +21,14 @@ public final class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     @NonNull
-    @Size(min = 4, max = 30)
     private String name;
 
-    @NotBlank
     @NonNull
-    @Size(min = 5, max = 50)
     @Email
     private String email;
 
-    @NotBlank
     @NonNull
-    @Size(min = 4, max = 100) //hasło przychodzi w formie zaszyfrowanej
     private String password;
 
     @NonNull
@@ -50,5 +44,23 @@ public final class User {
 
     private LocalDateTime registered = LocalDateTime.now();
 
-    private boolean enabled = false;
+    private boolean activated = false;
+
+    @OneToOne
+    @JoinColumn(name = "ban_id")
+    private Ban ban;
+
+    public boolean isAdmin() {
+        return roles
+                .stream()
+                .anyMatch(role -> role.getEnumeratedRole().toString().equals("ROLE_ADMIN"));
+    }
+
+    public boolean isBanned() {
+        if (ban == null) {
+            return false;
+        } else {
+            return ban.getDateAndTimeOfBan().isAfter(LocalDateTime.now(ZoneId.systemDefault()));
+        }
+    }
 }
