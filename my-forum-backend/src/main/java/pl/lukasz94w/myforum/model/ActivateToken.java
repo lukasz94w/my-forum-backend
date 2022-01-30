@@ -24,7 +24,6 @@ public class ActivateToken {
 
     @OneToOne
     @NonNull
-    @NotNull
     @JoinColumn(name = "user_id")
     private User user;
 

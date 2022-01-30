@@ -24,7 +24,6 @@ public final class PasswordToken {
 
     @OneToOne
     @NonNull
-    @NotNull
     @JoinColumn(name = "user_id")
     private User user;
 

@@ -23,7 +23,7 @@ public class PostController {
         this.postService = postService;
     }
 
-    @PreAuthorize("hasRole ('USER') or hasRole ('ADMIN')")
+    @PreAuthorize("hasRole ('USER')")
     @PostMapping("/addPost")
     public ResponseEntity<HttpStatus> addPost(@Valid @RequestBody NewPostContent newPostContent, Authentication authentication) {
         return postService.addPost(newPostContent, authentication);

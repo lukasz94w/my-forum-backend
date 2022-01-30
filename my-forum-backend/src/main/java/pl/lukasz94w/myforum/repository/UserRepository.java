@@ -26,4 +26,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAll();
 
     Optional<User> findByEmail(String email);
+
+    @Query(value =
+            "SELECT post.user, COUNT(post.user) " +
+                    "FROM Post post " +
+                    "WHERE post.user.id IN :userIds " +
+                    "GROUP BY post.user")
+    List<Object[]> countPostsInPageableUsers(@Param("userIds") List<Long> userIds);
+
+    @Query(value =
+            "SELECT topic.user, COUNT(topic.user) " +
+                    "FROM Topic topic " +
+                    "WHERE topic.user.id IN :userIds " +
+                    "GROUP BY topic.user")
+    List<Object[]> countTopicsInPageableUsers(@Param("userIds") List<Long> userIds);
 }

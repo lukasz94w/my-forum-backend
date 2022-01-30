@@ -57,25 +57,43 @@ public class TestDataConstructor {
 
         //USERS
         User user1 = new User("user1", "user1@gmail.com", passwordEncoder.encode("user1"), rolesForUser);
-        user1.setEnabled(true);
+        user1.setActivated(true);
         userService.saveUser(user1);
         User user2 = new User("user2", "user2@gmail.com", passwordEncoder.encode("user2"), rolesForUser);
-        user2.setEnabled(true);
+        user2.setActivated(true);
         userService.saveUser(user2);
         User user3 = new User("user3", "user3@gmail.com", passwordEncoder.encode("user3"), rolesForUser);
-        user3.setEnabled(true);
+        user3.setActivated(true);
         userService.saveUser(user3);
         User user4 = new User("user4", "user4@gmail.com", passwordEncoder.encode("user4"), rolesForUser);
-        user4.setEnabled(true);
+        user4.setActivated(true);
         userService.saveUser(user4);
         User user5 = new User("user5", "user5@gmail.com", passwordEncoder.encode("user5"), rolesForUser);
-        user5.setEnabled(true);
+        user5.setActivated(true);
         userService.saveUser(user5);
+        User user6 = new User("user6", "user6@gmail.com", passwordEncoder.encode("user6"), rolesForUser);
+        user6.setActivated(true);
+        userService.saveUser(user6);
+        User user7 = new User("user7", "user7@gmail.com", passwordEncoder.encode("user7"), rolesForUser);
+        user7.setActivated(true);
+        userService.saveUser(user7);
+        User user8 = new User("user8", "user8@gmail.com", passwordEncoder.encode("user8"), rolesForUser);
+        user8.setActivated(true);
+        userService.saveUser(user8);
+        User user9 = new User("user9", "user9@gmail.com", passwordEncoder.encode("user9"), rolesForUser);
+        user9.setActivated(true);
+        userService.saveUser(user9);
+        User user10 = new User("user10", "user10@gmail.com", passwordEncoder.encode("user10"), rolesForUser);
+        user10.setActivated(true);
+        userService.saveUser(user10);
         User admin = new User("admin", "admin@gmail.com", passwordEncoder.encode("admin"), rolesForAdmin);
-        admin.setEnabled(true);
+        admin.setActivated(true);
         userService.saveUser(admin);
+        User admin2 = new User("admin2", "admin2@gmail.com", passwordEncoder.encode("admin2"), rolesForAdmin);
+        admin2.setActivated(true);
+        userService.saveUser(admin2);
         User lukasz94w = new User("lukasz94w", "lukasz94w@wp.pl", passwordEncoder.encode("lukasz94w"), rolesForUser);
-        lukasz94w.setEnabled(true);
+        lukasz94w.setActivated(true);
         userService.saveUser(lukasz94w);
 
         //CATEGORIES
@@ -92,7 +110,7 @@ public class TestDataConstructor {
         Category electronic = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.ELECTRONIC);
 
         //TOPICS AND POSTS
-        for (int i = 0; i <= 1; i++) {
+        for (int i = 0; i <= 50; i++) {
             Topic topic1 = new Topic("Kupno telewizora za 2000zl TOPIC 1", user1, electronic);
             topicRepository.save(topic1);
             createCommentsForTopic(topic1, user1, user2, user3, user4, user5, admin, user1);
@@ -170,7 +188,8 @@ public class TestDataConstructor {
         wait(1);
         postService.savePostForTestConstructor(new Post("Blabla", 28, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 29, topic, user2));        wait(1);
+        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 29, topic, user2));
+        wait(1);
         wait(1);
         postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 30, topic, user3));
         wait(1);
@@ -182,14 +201,10 @@ public class TestDataConstructor {
         wait(1);
     }
 
-    public static void wait(int ms)
-    {
-        try
-        {
+    public static void wait(int ms) {
+        try {
             Thread.sleep(ms);
-        }
-        catch(InterruptedException ex)
-        {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }

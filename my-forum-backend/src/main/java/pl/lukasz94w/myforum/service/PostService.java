@@ -82,13 +82,12 @@ public class PostService {
     }
 
     public ResponseEntity<HttpStatus> addPost(NewPostContent newPostContent, Authentication authentication) {
-
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
 
         Topic topicOfPost = topicRepository.findTopicById(newPostContent.getTopicId());
         topicOfPost.setTimeOfActualization(LocalDateTime.now());
-        //TODO czy tutaj save nie brakuje?
+        topicRepository.save(topicOfPost);
         int numberOfPostsInTopic = postRepository.countPostByTopic(topicOfPost);
         Post newPost = new Post(newPostContent.getContent(), numberOfPostsInTopic + 1, topicOfPost, authenticatedUser);
         postRepository.save(newPost);

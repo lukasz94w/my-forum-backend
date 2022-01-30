@@ -21,19 +21,15 @@ public final class Topic {
     private Long id;
 
     @NonNull
-    @NotBlank
-    @Size(min = 5, max = 100)
     private String title;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @NotNull
     @NonNull
     @JoinColumn(name = "user_id")
     private User user;
 
     //with this addNew post doesnt work (fetch = FetchType.LAZY)
     @OneToOne
-    @NotNull
     @NonNull
     @JoinColumn(name = "category_id")
     private Category category;

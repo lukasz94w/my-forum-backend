@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -69,7 +66,7 @@ public class AuthService {
         this.activateTokenRepository = activateTokenRepository;
     }
 
-    public ResponseEntity<MessageResponse> signUp(SignupRequest signUpRequest) {
+    public ResponseEntity<MessageResponse> signUp(SignUpRequest signUpRequest) {
         if (userRepository.existsByName(signUpRequest.getUsername())) {
             return ResponseEntity
                     .badRequest()
@@ -107,13 +104,19 @@ public class AuthService {
         return ResponseEntity.ok(new MessageResponse("User registered successfully, check email for verification link"));
     }
 
-    public ResponseEntity<?> signIn(LoginRequest loginRequest) {
+    public ResponseEntity<?> signIn(SignInRequest signInRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         } catch (DisabledException exception) {
-            return new ResponseEntity<>(HttpStatus.LOCKED);
+            return new ResponseEntity<>(HttpStatus.TOO_EARLY); // account wasn't activated via email yet
+        } catch (LockedException exception) {
+            System.out.println("USER IS BANNED");
+            // brac z login request username wyszukiwac za pomoca userrepo i stad brac date bana?
+            // zwracac jednak username
+            // oraz date do kiedy ban xd
+            return new ResponseEntity<>(HttpStatus.LOCKED); // user is banned
         } catch (BadCredentialsException exception) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -121,7 +124,7 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String jwtAccessToken = jwtUtils.generateJwtAccessToken(userDetails.getUsername());
+        String jwtAccessToken = jwtUtils.generateJwtAccessToken(userDetails.getUsername(), userDetails.isAdmin());
         String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userDetails.getUsername());
 
         Map<String, String> authenticationResponse = new LinkedHashMap<>();
@@ -137,7 +140,7 @@ public class AuthService {
 
         if (jwtUtils.validateJwtToken(refreshToken) && jwtUtils.getUserNameFromJwtToken(refreshToken) != null) {
             String userNameFromToken = jwtUtils.getUserNameFromJwtToken(refreshToken);
-            String newAccessToken = jwtUtils.generateJwtAccessToken(userNameFromToken);
+            String newAccessToken = jwtUtils.generateJwtAccessToken(userNameFromToken, null);
             return ResponseEntity.ok(Collections.singletonMap("accessToken", newAccessToken));
         }
 
@@ -202,7 +205,7 @@ public class AuthService {
         }
 
         User user = activateToken.getUser();
-        if (user.isEnabled()) {
+        if (user.isActivated()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
@@ -210,7 +213,7 @@ public class AuthService {
             return new ResponseEntity<>(HttpStatus.GONE);
         }
 
-        user.setEnabled(true);
+        user.setActivated(true);
         userRepository.save(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }

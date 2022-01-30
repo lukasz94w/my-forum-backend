@@ -21,9 +21,10 @@ public class JwtUtils {
     @Value("${pl.lukasz94w.jwtRefreshTokenExpirationTimeInMs}")
     private int jwtRefreshTokenExpirationTimeInMs;
 
-    public String generateJwtAccessToken(String userName) {
+    public String generateJwtAccessToken(String userName, Boolean isUserAdmin) {
         return Jwts.builder()
                 .setSubject(userName)
+                .claim("isAdmin", isUserAdmin)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime() + jwtAccessTokenExpirationTimeInMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)

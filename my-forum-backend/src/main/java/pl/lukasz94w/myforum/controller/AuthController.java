@@ -23,13 +23,13 @@ public class AuthController {
     }
 
     @PostMapping("/signUp")
-    public ResponseEntity<MessageResponse> signUp(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<MessageResponse> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
         return authService.signUp(signUpRequest);
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<?> signIn(@Valid @RequestBody LoginRequest loginRequest) {
-        return authService.signIn(loginRequest);
+    public ResponseEntity<?> signIn(@Valid @RequestBody SignInRequest signInRequest) {
+        return authService.signIn(signInRequest);
     }
 
     @PostMapping("/refreshToken")

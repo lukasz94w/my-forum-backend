@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.lukasz94w.myforum.model.*;
 import pl.lukasz94w.myforum.repository.*;
+import pl.lukasz94w.myforum.request.BanRequest;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.response.PostDto2;
 import pl.lukasz94w.myforum.response.TopicDto2;
@@ -22,6 +23,10 @@ import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.util.TopicServiceUtil;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.prepareLastActivitiesInPageableTopics;
 import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.prepareNumberOfAnswersInPageableTopics;
+import static pl.lukasz94w.myforum.service.util.UserServiceUtil.prepareNumberOfEntriesInPageableUsers;
 
 @Service
 public final class UserService {
@@ -39,8 +45,7 @@ public final class UserService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
     private final TopicRepository topicRepository;
-    private final PasswordTokenRepository passwordTokenRepository;
-    private final MailService mailService;
+    private final BanRepository banRepository;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -48,15 +53,13 @@ public final class UserService {
                        PostRepository postRepository,
                        PasswordEncoder passwordEncoder,
                        TopicRepository topicRepository,
-                       PasswordTokenRepository passwordTokenRepository,
-                       MailService mailService) {
+                       BanRepository banRepository) {
         this.userRepository = userRepository;
         this.profilePicRepository = profilePicRepository;
         this.postRepository = postRepository;
         this.passwordEncoder = passwordEncoder;
         this.topicRepository = topicRepository;
-        this.passwordTokenRepository = passwordTokenRepository;
-        this.mailService = mailService;
+        this.banRepository = banRepository;
     }
 
     public User findUserByUsername(String username) {
@@ -72,7 +75,7 @@ public final class UserService {
     public Map<String, byte[]> getProfilePic(Authentication authentication) {
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
-        ProfilePic profilePic = profilePicRepository.findById(authenticatedUser.getId()).orElse(null);
+        ProfilePic profilePic = authenticatedUser.getProfilePic();
 
         Map<String, byte[]> mapWithProfilePic = new HashMap<>();
         if (profilePic != null) {
@@ -116,7 +119,6 @@ public final class UserService {
     }
 
     public Map<String, Object> findPageablePostsByUser(int page, String username) {
-
         Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").descending());
         User user = userRepository.findByName(username);
         Page<Post> pageablePosts = postRepository.findByUser(user, paging);
@@ -163,6 +165,71 @@ public final class UserService {
     }
 
     public UserDto getUserInfo(String username) {
-        return MapperDto.mapToUserDto(userRepository.findByName(username));
+        return MapperDto.mapToUserDto2(userRepository.findByName(username));
+    }
+
+    public Map<String, Object> findPageableUsers(int page) {
+        Pageable paging = PageRequest.of(page, 10, Sort.by("registered").ascending());
+        Page<User> pageableUsers = userRepository.findAll(paging);
+        List<User> listOfLatest10PageableUsers = pageableUsers.getContent();
+
+        Collection<UserDto> pageableUsersDto = listOfLatest10PageableUsers.stream()
+                .map(MapperDto::mapToUserDto)
+                .collect(Collectors.toList());
+
+        List<Long> listOfUserIds = pageableUsers.stream().map(User::getId).collect(Collectors.toList());
+        List<Object[]> foundedNumberOfPostsInPageableUsers = userRepository.countPostsInPageableUsers(listOfUserIds);
+        List<Object[]> foundedNumberOfTopicsInPageableUsers = userRepository.countTopicsInPageableUsers(listOfUserIds);
+        List<Long> numberOfPostsInPageableUsers = prepareNumberOfEntriesInPageableUsers(listOfLatest10PageableUsers, foundedNumberOfPostsInPageableUsers);
+        List<Long> numberOfTopicsInPageableUsers = prepareNumberOfEntriesInPageableUsers(listOfLatest10PageableUsers, foundedNumberOfTopicsInPageableUsers);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("pageableUsers", pageableUsersDto);
+        response.put("numberOfPostsInPageableUsers", numberOfPostsInPageableUsers);
+        response.put("numberOfTopicsInPageableUsers", numberOfTopicsInPageableUsers);
+        response.put("currentPage", pageableUsers.getNumber());
+        response.put("totalUsers", pageableUsers.getTotalElements());
+        response.put("totalPages", pageableUsers.getTotalPages());
+
+        return response;
+    }
+
+    public ResponseEntity<HttpStatus> banUser(BanRequest banRequest) {
+        User user = userRepository.findByName(banRequest.getUserName());
+
+        // additional (not mandatory checking because front-end part of application has its own validation)
+        if (user == null || user.isBanned()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        // checking if there was any ban before if so clean it from repository
+        Ban possibleOldBan = banRepository.findByUser(user);
+        if (possibleOldBan != null) {
+            user.setBan(null);
+            banRepository.delete(possibleOldBan);
+        }
+
+        // user is banned until end of given date
+        LocalDateTime dateAndTimeOfBan = banRequest.getDateOfBan().atTime(23, 59, 59);
+        Ban userBan = new Ban(user, banRequest.getReasonOfBan(), dateAndTimeOfBan);
+        user.setBan(userBan);
+        banRepository.save(userBan);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    public ResponseEntity<HttpStatus> unBanUser(String userName) {
+        User user = userRepository.findByName(userName);
+
+        // additional (not mandatory checking because front-end part of application has its own validation)
+        if (user == null || !user.isBanned()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Ban currentBan = banRepository.findByUser(user);
+        user.setBan(null);
+        banRepository.delete(currentBan);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
