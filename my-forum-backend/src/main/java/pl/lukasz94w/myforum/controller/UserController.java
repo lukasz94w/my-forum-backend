@@ -7,14 +7,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lukasz94w.myforum.request.BanRequest;
 import pl.lukasz94w.myforum.request.ChangePasswordThroughUserSettings;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.response.UserDto;
 import pl.lukasz94w.myforum.service.UserService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.util.Map;
 
 @RestController
@@ -65,17 +63,5 @@ public class UserController {
     @GetMapping("/findPageableUsers")
     public ResponseEntity<Map<String, Object>> findPageableUsers(@RequestParam(defaultValue = "0") int page) {
         return new ResponseEntity<>(userService.findPageableUsers(page), HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasRole ('ADMIN')")
-    @PostMapping("/banUser")
-    public ResponseEntity<HttpStatus> banUser(@Valid @RequestBody BanRequest banRequest) {
-        return userService.banUser(banRequest);
-    }
-
-    @PreAuthorize("hasRole ('ADMIN')")
-    @PostMapping("/unBanUser")
-    public ResponseEntity<HttpStatus> unBanUser(@RequestBody @NotBlank String userName) {
-        return userService.unBanUser(userName);
     }
 }

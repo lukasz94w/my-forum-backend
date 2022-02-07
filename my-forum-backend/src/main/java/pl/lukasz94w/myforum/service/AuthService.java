@@ -31,6 +31,7 @@ import pl.lukasz94w.myforum.service.util.MailServiceUtil;
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -107,16 +108,17 @@ public class AuthService {
     public ResponseEntity<?> signIn(SignInRequest signInRequest) {
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         } catch (DisabledException exception) {
             return new ResponseEntity<>(HttpStatus.TOO_EARLY); // account wasn't activated via email yet
         } catch (LockedException exception) {
-            System.out.println("USER IS BANNED");
-            // brac z login request username wyszukiwac za pomoca userrepo i stad brac date bana?
-            // zwracac jednak username
-            // oraz date do kiedy ban xd
-            return new ResponseEntity<>(HttpStatus.LOCKED); // user is banned
+            String userName = signInRequest.getUsername();
+            long dateOfBanAsUnix = userRepository.findByName(userName).getBan().getDateAndTimeOfBan().atZone(ZoneId.systemDefault()).toEpochSecond();
+
+            Map<String, Object> bannedUserResponse = new HashMap<>();
+            bannedUserResponse.put("userName", userName);
+            bannedUserResponse.put("dateOfBan", dateOfBanAsUnix);
+            return new ResponseEntity<>(bannedUserResponse, HttpStatus.LOCKED); // user is banned
         } catch (BadCredentialsException exception) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }

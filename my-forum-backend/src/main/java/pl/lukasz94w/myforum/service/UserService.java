@@ -12,9 +12,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lukasz94w.myforum.model.*;
+import pl.lukasz94w.myforum.model.Post;
+import pl.lukasz94w.myforum.model.ProfilePic;
+import pl.lukasz94w.myforum.model.Topic;
+import pl.lukasz94w.myforum.model.User;
 import pl.lukasz94w.myforum.repository.*;
-import pl.lukasz94w.myforum.request.BanRequest;
 import pl.lukasz94w.myforum.response.MessageResponse;
 import pl.lukasz94w.myforum.response.PostDto2;
 import pl.lukasz94w.myforum.response.TopicDto2;
@@ -23,10 +25,6 @@ import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.util.TopicServiceUtil;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -45,27 +43,18 @@ public final class UserService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
     private final TopicRepository topicRepository;
-    private final BanRepository banRepository;
 
     @Autowired
     public UserService(UserRepository userRepository,
                        ProfilePicRepository profilePicRepository,
                        PostRepository postRepository,
                        PasswordEncoder passwordEncoder,
-                       TopicRepository topicRepository,
-                       BanRepository banRepository) {
+                       TopicRepository topicRepository) {
         this.userRepository = userRepository;
         this.profilePicRepository = profilePicRepository;
         this.postRepository = postRepository;
         this.passwordEncoder = passwordEncoder;
         this.topicRepository = topicRepository;
-        this.banRepository = banRepository;
-    }
-
-    public User findUserByUsername(String username) {
-        return userRepository.findUserByName(username).orElseThrow(
-                () -> new UsernameNotFoundException("User with that name not found")
-        );
     }
 
     public void saveUser(User user) {
@@ -192,44 +181,5 @@ public final class UserService {
         response.put("totalPages", pageableUsers.getTotalPages());
 
         return response;
-    }
-
-    public ResponseEntity<HttpStatus> banUser(BanRequest banRequest) {
-        User user = userRepository.findByName(banRequest.getUserName());
-
-        // additional (not mandatory checking because front-end part of application has its own validation)
-        if (user == null || user.isBanned()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        // checking if there was any ban before if so clean it from repository
-        Ban possibleOldBan = banRepository.findByUser(user);
-        if (possibleOldBan != null) {
-            user.setBan(null);
-            banRepository.delete(possibleOldBan);
-        }
-
-        // user is banned until end of given date
-        LocalDateTime dateAndTimeOfBan = banRequest.getDateOfBan().atTime(23, 59, 59);
-        Ban userBan = new Ban(user, banRequest.getReasonOfBan(), dateAndTimeOfBan);
-        user.setBan(userBan);
-        banRepository.save(userBan);
-
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    public ResponseEntity<HttpStatus> unBanUser(String userName) {
-        User user = userRepository.findByName(userName);
-
-        // additional (not mandatory checking because front-end part of application has its own validation)
-        if (user == null || !user.isBanned()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        Ban currentBan = banRepository.findByUser(user);
-        user.setBan(null);
-        banRepository.delete(currentBan);
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

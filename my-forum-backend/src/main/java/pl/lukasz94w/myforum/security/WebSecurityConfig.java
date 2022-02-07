@@ -62,7 +62,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/topic/**",
                         "/post/**",
                         "/user/**",
-                        "/console/**").permitAll()
+                        "/console/**",
+                        "/ban/checkBanStatus/**",
+                        "/listener-for-messages-from-admin-actions/**").permitAll()
+                .and()
+                .headers()
+                .frameOptions().sameOrigin()
+                .and()
+                .authorizeRequests()
+
                 .anyRequest().authenticated().and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
