@@ -56,5 +56,4 @@ public class AuthController {
     public ResponseEntity<?> resendActivationToken(@RequestParam @Size(min = 30, max = 30) String oldExpiredToken) {
         return authService.resendActivationToken(oldExpiredToken);
     }
-
 }
