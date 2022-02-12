@@ -7,9 +7,10 @@ import pl.lukasz94w.myforum.model.*;
 import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
 import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
 import pl.lukasz94w.myforum.repository.CategoryRepository;
+import pl.lukasz94w.myforum.repository.PostRepository;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.TopicRepository;
-import pl.lukasz94w.myforum.service.PostService;
+import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.service.UserService;
 
 import javax.annotation.PostConstruct;
@@ -20,16 +21,16 @@ import java.util.Set;
 public class TestDataConstructor {
 
     private final TopicRepository topicRepository;
-    private final PostService postService;
+    private final PostRepository postRepository;
     private final UserService userService;
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public TestDataConstructor(TopicRepository topicRepository, PostService postService, UserService userService, RoleRepository roleRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
+    public TestDataConstructor(TopicRepository topicRepository, PostRepository postRepository, UserService userService, RoleRepository roleRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
         this.topicRepository = topicRepository;
-        this.postService = postService;
+        this.postRepository = postRepository;
         this.userService = userService;
         this.roleRepository = roleRepository;
         this.categoryRepository = categoryRepository;
@@ -132,80 +133,85 @@ public class TestDataConstructor {
     }
 
     private void createCommentsForTopic(Topic topic, User user1, User user2, User user3, User user4, User user5, User admin, User author) {
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 1, topic, author));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 1, topic, author));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 2, topic, user5));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 2, topic, user5));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 3, topic, user4));
+        savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 3, topic, user4));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest jakis bardzo dlugi komentarz xd", 4, topic, user2));
+        savePostForTestConstructor(new Post("To jest jakis bardzo dlugi komentarz xd", 4, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 5, topic, user1));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 5, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("Blabla", 6, topic, user1));
+        savePostForTestConstructor(new Post("Blabla", 6, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 7, topic, user2));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 7, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 8, topic, user3));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 8, topic, user3));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 9, topic, admin));
+        savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 9, topic, admin));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 2", 10, topic, user1));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 2", 10, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 11, topic, user2));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 11, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 12, topic, user3));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 12, topic, user3));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 13, topic, user5));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 13, topic, user5));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 14, topic, user4));
+        savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 14, topic, user4));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest jakis bardzo dlugi komentarz xd", 15, topic, user2));
+        savePostForTestConstructor(new Post("To jest jakis bardzo dlugi komentarz xd", 15, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 16, topic, user1));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 16, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("Blabla", 17, topic, user1));
+        savePostForTestConstructor(new Post("Blabla", 17, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 18, topic, user2));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 18, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 19, topic, user3));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 19, topic, user3));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 20, topic, admin));
+        savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 20, topic, admin));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 2", 21, topic, user1));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 2", 21, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 22, topic, user2));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 22, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 23, topic, user3));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 23, topic, user3));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 24, topic, user5));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 24, topic, user5));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 25, topic, user4));
+        savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 25, topic, user4));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest jakis bardzo dlugi komentarz xd", 26, topic, user2));
+        savePostForTestConstructor(new Post("To jest jakis bardzo dlugi komentarz xd", 26, topic, user2));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 27, topic, user1));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 27, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("Blabla", 28, topic, user1));
+        savePostForTestConstructor(new Post("Blabla", 28, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 29, topic, user2));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 1", 29, topic, user2));
         wait(1);
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 30, topic, user3));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 1", 30, topic, user3));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 31, topic, admin));
+        savePostForTestConstructor(new Post("To jest pierwszy komentarz do tematu nr 2", 31, topic, admin));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 2", 32, topic, user1));
+        savePostForTestConstructor(new Post("To jest drugi komentarz do tematu nr 2", 32, topic, user1));
         wait(1);
-        postService.savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 33, topic, user2));
+        savePostForTestConstructor(new Post("To jest trzeci komentarz do tematu nr 2", 33, topic, user2));
         wait(1);
     }
 
-    public static void wait(int ms) {
+    private static void wait(int ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private void savePostForTestConstructor(Post post) {
+        postRepository.save(post);
+        MapperDto.mapToPostDto(post);
     }
 }

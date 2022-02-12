@@ -17,6 +17,8 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByTopicId(Long id, Pageable pageable);
 
+    Post findPostById(final Long id);
+
     Integer countPostByTopicCategory(Category category);
 
 //    this query will return a List<Map<String, Object>> which can be accessed by name

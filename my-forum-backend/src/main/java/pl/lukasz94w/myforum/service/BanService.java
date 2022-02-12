@@ -28,11 +28,6 @@ public class BanService {
     public ResponseEntity<HttpStatus> banUser(BanRequest banRequest) {
         User user = userRepository.findByName(banRequest.getUserName());
 
-        // additional (not mandatory checking because front-end part of application has its own validation)
-        if (user == null || user.isBanned()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         // checking if there was any ban before if so clean it from repository
         Ban possibleOldBan = banRepository.findByUser(user);
         if (possibleOldBan != null) {
@@ -51,11 +46,6 @@ public class BanService {
 
     public ResponseEntity<HttpStatus> unBanUser(String userName) {
         User user = userRepository.findByName(userName);
-
-        // additional (not mandatory checking because front-end part of application has its own validation)
-        if (user == null || !user.isBanned()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
 
         Ban currentBan = banRepository.findByUser(user);
         user.setBan(null);

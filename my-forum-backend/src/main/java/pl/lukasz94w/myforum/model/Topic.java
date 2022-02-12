@@ -3,9 +3,6 @@ package pl.lukasz94w.myforum.model;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,4 +34,6 @@ public final class Topic {
     private LocalDateTime dateTime = LocalDateTime.now();
 
     private LocalDateTime timeOfActualization = dateTime;
+
+    private boolean closed = false;
 }

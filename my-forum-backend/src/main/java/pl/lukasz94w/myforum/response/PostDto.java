@@ -8,10 +8,11 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class PostDto {
-    private Long id;
-    private String content;
-    private String user;
-    private LocalDateTime dateTime;
-    private byte[] profilePic;
-    private int number;
+    private final Long id;
+    private final String content;
+    private final String user;
+    private final LocalDateTime dateTime;
+    private final byte[] profilePic;
+    private final int number;
+    private final boolean moderated;
 }

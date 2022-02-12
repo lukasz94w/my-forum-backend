@@ -19,7 +19,9 @@ import pl.lukasz94w.myforum.repository.PostRepository;
 import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.NewTopicContent;
+import pl.lukasz94w.myforum.request.TopicStatus;
 import pl.lukasz94w.myforum.response.TopicDto;
+import pl.lukasz94w.myforum.response.TopicDto3;
 import pl.lukasz94w.myforum.response.mapper.MapperDto;
 import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 
@@ -60,21 +62,20 @@ public class TopicService {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    public ResponseEntity<HttpStatus> changeStatus(TopicStatus topicStatus) {
+        Topic topic = topicRepository.findTopicById(topicStatus.getTopicId());
+        topic.setClosed(topicStatus.isClosed());
+        topicRepository.save(topic);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     public ResponseEntity<HttpStatus> deleteTopicById(final Long id) {
         topicRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public TopicDto getTopicById(final Long id) {
-        return MapperDto.mapToTopicDto(topicRepository.getById(id));
-    }
-
-    public List<TopicDto> getAllTopics() {
-        Collection<Topic> topics = topicRepository.findAll();
-
-        return topics.stream()
-                .map(MapperDto::mapToTopicDto)
-                .collect(Collectors.toList());
+    public TopicDto3 getTopicById(final Long id) {
+        return MapperDto.mapToTopicDto3(topicRepository.getById(id));
     }
 
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {

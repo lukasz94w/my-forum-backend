@@ -1,15 +1,14 @@
 package pl.lukasz94w.myforum.model;
 
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 public class Post {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NonNull
@@ -28,13 +27,20 @@ public class Post {
     @NonNull
     private int number;
 
-    @ManyToOne (fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @NonNull
     @JoinColumn(name = "topic_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Topic topic;
 
     @ManyToOne
     @NonNull
     @JoinColumn(name = "user_id")
     private User user;
+
+    private boolean moderated = false;
+
+    public void setModerated(boolean state) {
+        this.moderated = state;
+    }
 }
