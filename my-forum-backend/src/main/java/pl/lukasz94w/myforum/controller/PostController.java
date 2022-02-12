@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pl.lukasz94w.myforum.request.NewPostContent;
+import pl.lukasz94w.myforum.request.PostStatus;
 import pl.lukasz94w.myforum.service.PostService;
 
 import javax.validation.Valid;
@@ -27,6 +28,12 @@ public class PostController {
     @PostMapping("/addPost")
     public ResponseEntity<HttpStatus> addPost(@Valid @RequestBody NewPostContent newPostContent, Authentication authentication) {
         return postService.addPost(newPostContent, authentication);
+    }
+
+    @PreAuthorize("hasRole ('ADMIN')")
+    @PostMapping("/changeStatus")
+    public ResponseEntity<HttpStatus> changeStatus(@Valid @RequestBody PostStatus postStatus) {
+        return postService.changeStatus(postStatus);
     }
 
     @GetMapping("/findPageablePostsByTopicId")

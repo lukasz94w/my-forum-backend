@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class UserDto {
-    private String name;
-    private String email;
-    private byte[] profilePic;
-    private LocalDateTime registered;
-    private boolean isAdmin;
-    private boolean isBanned;
+    private final String name;
+    private final String email;
+    private final byte[] profilePic;
+    private final LocalDateTime registered;
+    private final boolean isAdmin;
+    private final boolean isBanned;
 }

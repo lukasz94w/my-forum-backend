@@ -5,21 +5,25 @@ import pl.lukasz94w.myforum.response.*;
 
 public class MapperDto {
 
-    public static TopicDto mapToTopicDto(Topic topic) {
-        return new TopicDto(topic.getId(), topic.getTitle(), topic.getUser().getName(), topic.getDateTime());
+    public static TopicDto2 mapToTopicDto2(Topic topic) {
+        return new TopicDto2(topic.getId(), topic.getTitle(), topic.getUser().getName(), topic.getDateTime(), topic.getCategory().toString());
+    }
+
+    public static TopicDto3 mapToTopicDto3(Topic topic) {
+        return new TopicDto3(topic.getTitle(), topic.isClosed());
     }
 
     public static PostDto mapToPostDto(Post post) {
-        return new PostDto(post.getId(), post.getContent(), post.getUser().getName(), post.getDateTime(), getProfilePic(post.getUser()), post.getNumber());
+        boolean isPostModerated = post.isModerated();
+        if (isPostModerated) {
+            return new PostDto(post.getId(), null, post.getUser().getName(), post.getDateTime(), getProfilePic(post.getUser()), post.getNumber(), isPostModerated);
+        } else {
+            return new PostDto(post.getId(), post.getContent(), post.getUser().getName(), post.getDateTime(), getProfilePic(post.getUser()), post.getNumber(), isPostModerated);
+        }
     }
 
     public static PostDto2 mapToPostDto2(Post post) {
-        // tutaj sprawdzac czy jest wymoderowany i nulle wstawiac w miejsce contentu jak byndzie
         return new PostDto2(post.getTopic().getId(), post.getTopic().getTitle(), post.getTopic().getCategory().toString(), post.getDateTime(), post.getContent(), post.getNumber());
-    }
-
-    public static TopicDto2 mapToTopicDto2(Topic topic) {
-        return new TopicDto2(topic.getId(), topic.getTitle(), topic.getUser().getName(), topic.getDateTime(), topic.getCategory().toString());
     }
 
     public static UserDto mapToUserDto(User user) {

@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
@@ -17,6 +16,7 @@ import pl.lukasz94w.myforum.repository.PostRepository;
 import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.NewPostContent;
+import pl.lukasz94w.myforum.request.PostStatus;
 import pl.lukasz94w.myforum.response.PostDto;
 import pl.lukasz94w.myforum.response.PostDto2;
 import pl.lukasz94w.myforum.response.mapper.MapperDto;
@@ -25,7 +25,6 @@ import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,21 +42,34 @@ public class PostService {
         this.topicRepository = topicRepository;
     }
 
-    public PostDto savePostForTestConstructor(Post post) {
+    public ResponseEntity<HttpStatus> addPost(NewPostContent newPostContent, Authentication authentication) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
+        User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
+
+        Topic topicOfPost = topicRepository.findTopicById(newPostContent.getTopicId());
+
+        // when topic was deleted by admin
+        if (topicOfPost == null) {
+            return new ResponseEntity<>(HttpStatus.GONE);
+        }
+
+        if (topicOfPost.isClosed()) {
+            return new ResponseEntity<>(HttpStatus.LOCKED);
+        }
+
+        topicOfPost.setTimeOfActualization(LocalDateTime.now());
+        topicRepository.save(topicOfPost);
+        int numberOfPostsInTopic = postRepository.countPostByTopic(topicOfPost);
+        Post newPost = new Post(newPostContent.getContent(), numberOfPostsInTopic + 1, topicOfPost, authenticatedUser);
+        postRepository.save(newPost);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    public ResponseEntity<HttpStatus> changeStatus(PostStatus postStatus) {
+        Post post = postRepository.findPostById(postStatus.getPostId());
+        post.setModerated(postStatus.isModerated());
         postRepository.save(post);
-        return MapperDto.mapToPostDto(post);
-    }
-
-    public List<Object[]> countByCategoryList() {
-        return postRepository.countPostsByCategories();
-    }
-
-    public List<Post> findLatestPostsInSummaryTopics(List<Long> topicIds) {
-        return postRepository.findLatestPostsInEachOfLatestTopics(topicIds);
-    }
-
-    public Integer countPostByTopicCategory(Category category) {
-        return postRepository.countPostByTopicCategory(category);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     public Map<String, Object> findPageablePostsByTopicId(int page, Long id) {
@@ -75,24 +87,6 @@ public class PostService {
         response.put("totalPages", pageablePosts.getTotalPages());
 
         return response;
-    }
-
-    public Integer countPostByTopic(Topic topic) {
-        return postRepository.countPostByTopic(topic);
-    }
-
-    public ResponseEntity<HttpStatus> addPost(NewPostContent newPostContent, Authentication authentication) {
-        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
-        User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
-
-        Topic topicOfPost = topicRepository.findTopicById(newPostContent.getTopicId());
-        topicOfPost.setTimeOfActualization(LocalDateTime.now());
-        topicRepository.save(topicOfPost);
-        int numberOfPostsInTopic = postRepository.countPostByTopic(topicOfPost);
-        Post newPost = new Post(newPostContent.getContent(), numberOfPostsInTopic + 1, topicOfPost, authenticatedUser);
-        postRepository.save(newPost);
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     public Map<String, Object> searchInPosts(int page, String query) {
