@@ -1,67 +1,62 @@
 package pl.lukasz94w.myforum.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lukasz94w.myforum.request.ChangePasswordThroughUserSettings;
-import pl.lukasz94w.myforum.response.MessageResponse;
-import pl.lukasz94w.myforum.response.UserDto;
+import pl.lukasz94w.myforum.request.ChangePasswordViaUserSettings;
+import pl.lukasz94w.myforum.response.dto.UserDto;
+import pl.lukasz94w.myforum.response.message.SuccessResponse;
 import pl.lukasz94w.myforum.service.UserService;
 
 import javax.validation.Valid;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @GetMapping("/getUserInfo/{username}")
+    public ResponseEntity<UserDto> getUserInfo(@PathVariable String username) {
+        return new ResponseEntity<>(userService.getUserInfo(username), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole ('USER')")
-    @PostMapping("/changeProfilePic")
-    public ResponseEntity<MessageResponse> changeProfilePic(@RequestParam("image") MultipartFile image, Authentication authentication) {
-        return userService.changeProfilePic(image, authentication);
+    @PutMapping("/changeProfilePic")
+    public ResponseEntity<SuccessResponse> changeProfilePic(@RequestParam("image") MultipartFile image) {
+        return new ResponseEntity<>(userService.changeProfilePic(image), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole ('USER')")
     @GetMapping("/getProfilePic")
-    public Map<String, byte[]> getProfilePic(Authentication authentication) {
-        return userService.getProfilePic(authentication);
-    }
-
-    @GetMapping("/getUserInfo/{username}")
-    public UserDto getUserInfo(@PathVariable String username) {
-        return userService.getUserInfo(username);
+    public ResponseEntity<Map<String, byte[]>> getProfilePic() {
+        return new ResponseEntity<>(userService.getProfilePic(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole ('USER')")
-    @PostMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordThroughUserSettings request, Authentication authentication) {
-        return userService.changePasswordThroughUserSettings(request.getCurrentPassword(), request.getNewPassword(), authentication);
+    @PutMapping("/changePassword")
+    public ResponseEntity<SuccessResponse> changePassword(@Valid @RequestBody ChangePasswordViaUserSettings request) {
+        return new ResponseEntity<>(userService.changePasswordThroughUserSettings(request), HttpStatus.CREATED);
     }
 
     @GetMapping("/findPageablePostsByUser")
-    public Map<String, Object> findPageablePostsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
-        return userService.findPageablePostsByUser(page, username);
+    public ResponseEntity<Map<String, Object>> findPageablePostsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
+        return new ResponseEntity<>(userService.findPageablePostsByUser(page, username), HttpStatus.OK);
     }
 
     @GetMapping("/findPageableTopicsByUser")
-    public Map<String, Object> findPageableTopicsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
-        return userService.findPageableTopicsByUser(page, username);
+    public ResponseEntity<Map<String, Object>> findPageableTopicsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam String username) {
+        return new ResponseEntity<>(userService.findPageableTopicsByUser(page, username), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole ('ADMIN')")
-    @GetMapping("/findPageableUsers")
-    public ResponseEntity<Map<String, Object>> findPageableUsers(@RequestParam(defaultValue = "0") int page) {
+    @GetMapping("/findPageableUsers/{page}")
+    public ResponseEntity<Map<String, Object>> findPageableUsers(@PathVariable int page) {
         return new ResponseEntity<>(userService.findPageableUsers(page), HttpStatus.OK);
     }
 }

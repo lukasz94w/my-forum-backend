@@ -1,6 +1,7 @@
-package pl.lukasz94w.myforum.response;
+package pl.lukasz94w.myforum.response.dto;
 
 import lombok.Getter;
+import pl.lukasz94w.myforum.response.dto.TopicDto;
 
 import java.time.LocalDateTime;
 

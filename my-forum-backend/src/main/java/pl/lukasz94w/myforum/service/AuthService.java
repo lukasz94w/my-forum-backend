@@ -1,18 +1,20 @@
 package pl.lukasz94w.myforum.service;
 
+import lombok.RequiredArgsConstructor;
 import net.bytebuddy.utility.RandomString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.lukasz94w.myforum.exception.enums.ActivateAccountExceptionEnum;
+import pl.lukasz94w.myforum.exception.enums.ChangePasswordViaEmailLinkExceptionEnum;
+import pl.lukasz94w.myforum.exception.exception.*;
+import pl.lukasz94w.myforum.exception.enums.SignInExceptionEnum;
+import pl.lukasz94w.myforum.exception.enums.SignUpExceptionEnum;
 import pl.lukasz94w.myforum.model.ActivateToken;
 import pl.lukasz94w.myforum.model.PasswordToken;
 import pl.lukasz94w.myforum.model.Role;
@@ -23,9 +25,8 @@ import pl.lukasz94w.myforum.repository.PasswordTokenRepository;
 import pl.lukasz94w.myforum.repository.RoleRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.*;
-import pl.lukasz94w.myforum.response.MessageResponse;
+import pl.lukasz94w.myforum.response.message.SuccessResponse;
 import pl.lukasz94w.myforum.security.token.JwtUtils;
-import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
 import pl.lukasz94w.myforum.service.util.MailServiceUtil;
 
 import javax.mail.MessagingException;
@@ -35,9 +36,12 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+    @Value("${pl.lukasz94w.serverAddress}")
+    private String serverUrl;
 
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
@@ -48,36 +52,15 @@ public class AuthService {
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
     private final ActivateTokenRepository activateTokenRepository;
+    private final MailServiceUtil mailServiceUtil;
 
-    @Value("${pl.lukasz94w.serverAddress}")
-    private String serverUrl;
-
-    public AuthService(AuthenticationManager authenticationManager, RoleRepository roleRepository,
-                       UserRepository userRepository, PasswordEncoder encoder, JwtUtils jwtUtils,
-                       PasswordTokenRepository passwordTokenRepository, MailService mailService,
-                       PasswordEncoder passwordEncoder, ActivateTokenRepository activateTokenRepository) {
-        this.authenticationManager = authenticationManager;
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.encoder = encoder;
-        this.jwtUtils = jwtUtils;
-        this.passwordTokenRepository = passwordTokenRepository;
-        this.mailService = mailService;
-        this.passwordEncoder = passwordEncoder;
-        this.activateTokenRepository = activateTokenRepository;
-    }
-
-    public ResponseEntity<MessageResponse> signUp(SignUpRequest signUpRequest) {
+    public SuccessResponse signUp(SignUpRequest signUpRequest) {
         if (userRepository.existsByName(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Username is already taken"));
+            throw new SignUpException(SignUpExceptionEnum.USERNAME_IS_TAKEN);
         }
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Email is already in use"));
+            throw new SignUpException(SignUpExceptionEnum.EMAIL_IS_TAKEN);
         }
 
         User user = new User();
@@ -91,72 +74,61 @@ public class AuthService {
         userRepository.save(user);
 
         String token = RandomString.make(30);
-        String confirmLink = MailServiceUtil.constructConfirmLink(token, serverUrl);
+        String confirmLink = mailServiceUtil.constructConfirmLink(token, serverUrl);
         try {
             mailService.sendActivateAccountEmail(signUpRequest.getEmail(), confirmLink); // it can also be done using @Async or by publishing event
-            activateTokenRepository.save(new ActivateToken(user, token));
         } catch (MessagingException | UnsupportedEncodingException | MailSendException exception) {
             logger.error(exception.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_GATEWAY)
-                    .body(new MessageResponse("Cannot send verification email. Try again later"));
+            throw new SignUpException(SignUpExceptionEnum.SENDING_MAIL_FAILED);
         }
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully, check email for verification link"));
+        activateTokenRepository.save(new ActivateToken(user, token));
+        return new SuccessResponse("Registration successful! Check email for confirmation link");
     }
 
-    public ResponseEntity<?> signIn(SignInRequest signInRequest) {
-        Authentication authentication;
+    public Map<String, String> signIn(SignInRequest signInRequest) {
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         } catch (DisabledException exception) {
-            return new ResponseEntity<>(HttpStatus.TOO_EARLY); // account wasn't activated via email yet
+            throw new SignInException(SignInExceptionEnum.ACCOUNT_NOT_ACTIVATED);
         } catch (LockedException exception) {
-            String userName = signInRequest.getUsername();
-            long dateOfBanAsUnix = userRepository.findByName(userName).getBan().getDateAndTimeOfBan().atZone(ZoneId.systemDefault()).toEpochSecond();
-
-            Map<String, Object> bannedUserResponse = new HashMap<>();
-            bannedUserResponse.put("userName", userName);
-            bannedUserResponse.put("dateOfBan", dateOfBanAsUnix);
-            return new ResponseEntity<>(bannedUserResponse, HttpStatus.LOCKED); // user is banned
+            Map<String, Object> bannedUserData = new HashMap<>();
+            bannedUserData.put("userName", signInRequest.getUsername());
+            bannedUserData.put("dateOfBan", userRepository.findByName(signInRequest.getUsername()).getBan().getDateAndTimeOfBan().atZone(ZoneId.systemDefault()).toEpochSecond());
+            throw new SignInException(SignInExceptionEnum.USER_IS_BANNED, bannedUserData);
         } catch (BadCredentialsException exception) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            throw new SignInException(SignInExceptionEnum.BAD_CREDENTIALS);
         }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User signedInUser = userRepository.findByName(signInRequest.getUsername());
 
-        String jwtAccessToken = jwtUtils.generateJwtAccessToken(userDetails.getUsername(), userDetails.isAdmin());
-        String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userDetails.getUsername());
+        Map<String, String> tokens = new LinkedHashMap<>();
+        tokens.put("accessToken", jwtUtils.generateJwtAccessToken(signedInUser.getName(), signedInUser.isAdmin()));
+        tokens.put("refreshToken", jwtUtils.generateJwtRefreshToken(signedInUser.getName()));
 
-        Map<String, String> authenticationResponse = new LinkedHashMap<>();
-        authenticationResponse.put("accessToken", jwtAccessToken);
-        authenticationResponse.put("refreshToken", jwtRefreshToken);
-
-        return ResponseEntity.ok(authenticationResponse);
+        return tokens;
     }
 
-    public ResponseEntity<?> refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        logger.warn("Access token expired, asking for new one");
+    public Map<String, String> refreshToken(RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
 
         if (jwtUtils.validateJwtToken(refreshToken) && jwtUtils.getUserNameFromJwtToken(refreshToken) != null) {
             String userNameFromToken = jwtUtils.getUserNameFromJwtToken(refreshToken);
             String newAccessToken = jwtUtils.generateJwtAccessToken(userNameFromToken, null);
-            return ResponseEntity.ok(Collections.singletonMap("accessToken", newAccessToken));
+            return Collections.singletonMap("accessToken", newAccessToken);
         }
 
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        throw new RefreshTokenException("Can't send new access token. Probably refresh token is expired");
     }
 
-    public void sendEmailWithResetToken(SendResetEmailRequest sendResetEmailRequest) {
-        String userEmail = sendResetEmailRequest.getEmail();
+    public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        String userEmail = resetPasswordRequest.getEmail();
         try {
-            User userFoundedByEmail = userRepository.findByEmail(sendResetEmailRequest.getEmail()).orElseThrow(
-                    () -> new UsernameNotFoundException("User not found with email: " + sendResetEmailRequest.getEmail()));
+            User userFoundedByEmail = userRepository.findByEmail(resetPasswordRequest.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + resetPasswordRequest.getEmail()));
 
             String token = RandomString.make(30);
-            String resetPasswordLink = MailServiceUtil.constructResetPasswordLink(token, serverUrl);
+            String resetPasswordLink = mailServiceUtil.constructResetPasswordLink(token, serverUrl);
 
             PasswordToken passwordToken = passwordTokenRepository.findByUser(userFoundedByEmail);
             if (passwordToken == null) {
@@ -167,78 +139,71 @@ public class AuthService {
                 passwordToken.setNewExpirationDateOfToken();
                 passwordTokenRepository.save(passwordToken);
             }
-
             mailService.sendResetPasswordEmail(userEmail, resetPasswordLink);
         } catch (UsernameNotFoundException | MessagingException | UnsupportedEncodingException exception) {
             // application doesn't return result if the user with
             // such email exist or if the email was successfully sent,
-            // so we log this event for information purposes
+            // so app logs this event for information purposes
             logger.error(exception.getMessage());
         }
     }
 
-    public ResponseEntity<MessageResponse> changePasswordThroughEmail(ChangePasswordThroughEmail changePasswordThroughEmail) {
-        PasswordToken passwordToken = passwordTokenRepository.findByToken(changePasswordThroughEmail.getReceivedToken());
+    public SuccessResponse changePassword(ChangePasswordViaEmailLink changePasswordViaEmailLink) {
+        PasswordToken passwordToken = passwordTokenRepository.findByToken(changePasswordViaEmailLink.getReceivedToken());
+
         if (passwordToken == null) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new MessageResponse("Token not found"));
+            throw new ChangePasswordViaEmailLinkException(ChangePasswordViaEmailLinkExceptionEnum.TOKEN_NOT_FOUND);
         }
+
         if (passwordToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return ResponseEntity
-                    .status(HttpStatus.GONE)
-                    .body(new MessageResponse("Token is expired"));
+            throw new ChangePasswordViaEmailLinkException(ChangePasswordViaEmailLinkExceptionEnum.TOKEN_EXPIRED);
         }
 
         User user = userRepository.findByName(passwordToken.getUser().getName());
-        user.setPassword(passwordEncoder.encode(changePasswordThroughEmail.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(changePasswordViaEmailLink.getNewPassword()));
         userRepository.save(user);
+        passwordTokenRepository.delete(passwordToken);
 
-        return ResponseEntity
-                .ok()
-                .body(new MessageResponse("Password changed successfully"));
+        return new SuccessResponse("Password changed successfully");
     }
 
-    public ResponseEntity<Void> activateAccount(String activationToken) {
+    public SuccessResponse activateAccount(String activationToken) {
         ActivateToken activateToken = activateTokenRepository.findByToken(activationToken);
 
         if (activateToken == null) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            throw new ActivateAccountException(ActivateAccountExceptionEnum.TOKEN_NOT_FOUND);
         }
 
         User user = activateToken.getUser();
         if (user.isActivated()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            throw new ActivateAccountException(ActivateAccountExceptionEnum.ACCOUNT_ALREADY_ACTIVATED);
         }
 
         if (activateToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return new ResponseEntity<>(HttpStatus.GONE);
+            throw new ActivateAccountException(ActivateAccountExceptionEnum.TOKEN_EXPIRED);
         }
 
         user.setActivated(true);
         userRepository.save(user);
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        return new SuccessResponse("Account successfully activated");
     }
 
-    public ResponseEntity<?> resendActivationToken(String oldExpiredToken) {
-        ActivateToken activateToken = activateTokenRepository.findByToken(oldExpiredToken);
-
-        if (activateToken == null) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+    public SuccessResponse resendActivationToken(String expiredActivationToken) {
+        ActivateToken activateToken = activateTokenRepository.findByToken(expiredActivationToken);
 
         String newToken = RandomString.make(30);
         activateToken.setNewToken(newToken);
         activateToken.setNewExpirationDateOfToken();
-        String confirmLink = MailServiceUtil.constructConfirmLink(newToken, serverUrl);
+        String confirmLink = mailServiceUtil.constructConfirmLink(newToken, serverUrl);
         try {
             mailService.sendActivateAccountEmail(activateToken.getUser().getEmail(), confirmLink);
             activateTokenRepository.save(activateToken);
         } catch (MessagingException | UnsupportedEncodingException | MailSendException exception) {
             logger.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+            throw new ResendActivationTokenException("Failed to send email. Try again later");
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new SuccessResponse("Email with new confirmation link was sent. Check your email inbox for further instructions");
     }
 }

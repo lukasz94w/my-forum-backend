@@ -1,13 +1,10 @@
 package pl.lukasz94w.myforum.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
@@ -20,36 +17,31 @@ import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.NewTopicContent;
 import pl.lukasz94w.myforum.request.TopicStatus;
-import pl.lukasz94w.myforum.response.TopicDto;
-import pl.lukasz94w.myforum.response.TopicDto3;
-import pl.lukasz94w.myforum.response.mapper.MapperDto;
-import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
+import pl.lukasz94w.myforum.response.dto.LastActivityInCategoryDto;
+import pl.lukasz94w.myforum.response.dto.LastActivityInPageableTopicDto;
+import pl.lukasz94w.myforum.response.dto.TopicDto;
+import pl.lukasz94w.myforum.response.dto.TopicDto3;
+import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
+import pl.lukasz94w.myforum.security.auth.AuthorizedUserProvider;
+import pl.lukasz94w.myforum.service.util.TopicServiceUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static pl.lukasz94w.myforum.service.util.TopicServiceUtil.*;
-
 @Service
+@RequiredArgsConstructor
 public class TopicService {
 
     private final TopicRepository topicRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final TopicServiceUtil topicServiceUtil;
+    private final MapperDto mapperDto;
+    private final AuthorizedUserProvider authorizedUserProvider;
 
-    @Autowired
-    public TopicService(TopicRepository topicRepository, CategoryRepository categoryRepository, UserRepository userRepository, PostRepository postRepository) {
-        this.topicRepository = topicRepository;
-        this.categoryRepository = categoryRepository;
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-    }
-
-    public ResponseEntity<HttpStatus> createTopic(NewTopicContent newTopicContent, Authentication authentication) {
-
-        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
-        User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
+    public void createTopic(NewTopicContent newTopicContent) {
+        User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
 
         EnumeratedCategory enumeratedCategory = EnumeratedCategory.valueOf(newTopicContent.getCategory().toUpperCase());
         Category topicCategory = categoryRepository.findByEnumeratedCategory(enumeratedCategory);
@@ -58,24 +50,20 @@ public class TopicService {
         this.topicRepository.save(newTopic);
         Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), 1, newTopic, authenticatedUser);
         this.postRepository.save(firstPostUnderNewTopic);
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    public ResponseEntity<HttpStatus> changeStatus(TopicStatus topicStatus) {
+    public void changeStatus(TopicStatus topicStatus) {
         Topic topic = topicRepository.findTopicById(topicStatus.getTopicId());
         topic.setClosed(topicStatus.isClosed());
         topicRepository.save(topic);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public ResponseEntity<HttpStatus> deleteTopicById(final Long id) {
+    public void deleteTopicById(Long id) {
         topicRepository.deleteById(id);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public TopicDto3 getTopicById(final Long id) {
-        return MapperDto.mapToTopicDto3(topicRepository.getById(id));
+    public TopicDto3 getTopicById(Long id) {
+        return mapperDto.mapToTopicDto3(topicRepository.getById(id));
     }
 
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {
@@ -87,10 +75,10 @@ public class TopicService {
 
     public Map<String, Object> countTopicsAndPostsByCategory() {
         List<Object[]> countedTopicsByCategories = topicRepository.countTopicsByCategories();
-        List<Long> numberOfTopicsInEachCategory = prepareNumbersOfEntries(countedTopicsByCategories);
+        List<Long> numberOfTopicsInEachCategory = topicServiceUtil.prepareNumbersOfEntries(countedTopicsByCategories);
 
         List<Object[]> countedPostsByCategories = postRepository.countPostsByCategories();
-        List<Long> numberOfPostsInEachCategory = prepareNumbersOfEntries(countedPostsByCategories);
+        List<Long> numberOfPostsInEachCategory = topicServiceUtil.prepareNumbersOfEntries(countedPostsByCategories);
 
         long totalNumberOfEntriesInGeneralSubjects =
                 numberOfTopicsInEachCategory.get(0) +
@@ -113,7 +101,7 @@ public class TopicService {
         List<Topic> latestTopicsInEachCategory = topicRepository.findLatestTopicInEachCategory();
         List<Long> listOfTopicIds = latestTopicsInEachCategory.stream().map(Topic::getId).collect(Collectors.toList());
         List<Post> latestPostInLatestTopics = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInCategory> lastTopicActivities = prepareLastActivitiesInEachCategory(latestTopicsInEachCategory, latestPostInLatestTopics);
+        List<LastActivityInCategoryDto> lastTopicActivities = topicServiceUtil.prepareLastActivitiesInEachCategory(latestTopicsInEachCategory, latestPostInLatestTopics);
 
         Map<String, Object> response = new HashMap<>();
         response.put("numberOfTopicsInEachCategory", numberOfTopicsInEachCategory);
@@ -134,15 +122,15 @@ public class TopicService {
     private Map<String, Object> buildResponse(Page<Topic> pageableTopics) {
         List<Topic> listOfLatest10Topics = pageableTopics.getContent();
         Collection<TopicDto> pageableTopicsDto = listOfLatest10Topics.stream()
-                .map(MapperDto::mapToTopicDto2)
+                .map(mapperDto::mapToTopicDto2)
                 .collect(Collectors.toList());
 
         List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfAnswersInPageableTopics = prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
+        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInPageableTopic> lastPageableTopicActivities = prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
+        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);

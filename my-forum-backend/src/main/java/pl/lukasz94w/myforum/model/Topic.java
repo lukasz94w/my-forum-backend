@@ -31,7 +31,7 @@ public final class Topic {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    private LocalDateTime dateTime = LocalDateTime.now();
+    private final LocalDateTime dateTime = LocalDateTime.now();
 
     private LocalDateTime timeOfActualization = dateTime;
 

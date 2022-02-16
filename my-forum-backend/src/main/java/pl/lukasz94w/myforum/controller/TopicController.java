@@ -1,50 +1,48 @@
 package pl.lukasz94w.myforum.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pl.lukasz94w.myforum.request.NewTopicContent;
 import pl.lukasz94w.myforum.request.TopicStatus;
-import pl.lukasz94w.myforum.response.TopicDto3;
+import pl.lukasz94w.myforum.response.dto.TopicDto3;
 import pl.lukasz94w.myforum.service.TopicService;
 
 import javax.validation.Valid;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/topic")
 public class TopicController {
 
     private final TopicService topicService;
 
-    @Autowired
-    public TopicController(TopicService topicService) {
-        this.topicService = topicService;
-    }
-
     @PreAuthorize("hasRole ('USER')")
     @PostMapping("/addTopic")
-    public ResponseEntity<HttpStatus> createTopic(@Valid @RequestBody NewTopicContent newTopicContent, Authentication authentication) {
-        return topicService.createTopic(newTopicContent, authentication);
+    public ResponseEntity<Void> createTopic(@Valid @RequestBody NewTopicContent newTopicContent) {
+        topicService.createTopic(newTopicContent);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole ('ADMIN')")
-    @PostMapping("/changeStatus")
-    public ResponseEntity<HttpStatus> changeStatus(@Valid @RequestBody TopicStatus topicStatus) {
-        return topicService.changeStatus(topicStatus);
+    @PutMapping("/changeStatus")
+    public ResponseEntity<Void> changeStatus(@Valid @RequestBody TopicStatus topicStatus) {
+        topicService.changeStatus(topicStatus);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole ('ADMIN')")
-    @GetMapping("/delete/{id}")
-    public ResponseEntity<HttpStatus> deleteTopicById(@PathVariable final Long id) {
-        return topicService.deleteTopicById(id);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteTopicById(@PathVariable Long id) {
+        topicService.deleteTopicById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("getTopicById/{id}")
-    public ResponseEntity<TopicDto3> getTopicById(@PathVariable final Long id) {
+    public ResponseEntity<TopicDto3> getTopicById(@PathVariable Long id) {
         return new ResponseEntity<>(topicService.getTopicById(id), HttpStatus.OK);
     }
 

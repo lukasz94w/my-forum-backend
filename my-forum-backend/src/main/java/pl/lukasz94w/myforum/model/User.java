@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -41,7 +42,7 @@ public final class User {
     @JoinColumn(name = "profilepic_id")
     private ProfilePic profilePic;
 
-    private LocalDateTime registered = LocalDateTime.now();
+    private final LocalDateTime registered = LocalDateTime.now();
 
     private boolean activated = false;
 
@@ -56,10 +57,6 @@ public final class User {
     }
 
     public boolean isBanned() {
-        if (ban == null) {
-            return false;
-        } else {
-            return ban.getDateAndTimeOfBan().isAfter(LocalDateTime.now(ZoneId.systemDefault()));
-        }
+        return Optional.ofNullable(ban).map(b -> b.getDateAndTimeOfBan().isAfter(LocalDateTime.now(ZoneId.systemDefault()))).orElse(false);
     }
 }
