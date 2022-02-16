@@ -6,15 +6,12 @@ import org.springframework.stereotype.Component;
 import pl.lukasz94w.myforum.model.*;
 import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
 import pl.lukasz94w.myforum.model.enums.EnumeratedRole;
-import pl.lukasz94w.myforum.repository.CategoryRepository;
-import pl.lukasz94w.myforum.repository.PostRepository;
-import pl.lukasz94w.myforum.repository.RoleRepository;
-import pl.lukasz94w.myforum.repository.TopicRepository;
-import pl.lukasz94w.myforum.response.mapper.MapperDto;
-import pl.lukasz94w.myforum.service.UserService;
+import pl.lukasz94w.myforum.repository.*;
+import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
 
 import javax.annotation.PostConstruct;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -22,19 +19,24 @@ public class TestDataConstructor {
 
     private final TopicRepository topicRepository;
     private final PostRepository postRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MapperDto mapperDto;
 
     @Autowired
-    public TestDataConstructor(TopicRepository topicRepository, PostRepository postRepository, UserService userService, RoleRepository roleRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
+    public TestDataConstructor(TopicRepository topicRepository, PostRepository postRepository,
+                               UserRepository userRepository, RoleRepository roleRepository,
+                               CategoryRepository categoryRepository, PasswordEncoder passwordEncoder,
+                               MapperDto mapperDto) {
         this.topicRepository = topicRepository;
         this.postRepository = postRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mapperDto = mapperDto;
     }
 
     @PostConstruct
@@ -59,43 +61,43 @@ public class TestDataConstructor {
         //USERS
         User user1 = new User("user1", "user1@gmail.com", passwordEncoder.encode("user1"), rolesForUser);
         user1.setActivated(true);
-        userService.saveUser(user1);
+        userRepository.save(user1);
         User user2 = new User("user2", "user2@gmail.com", passwordEncoder.encode("user2"), rolesForUser);
         user2.setActivated(true);
-        userService.saveUser(user2);
+        userRepository.save(user2);
         User user3 = new User("user3", "user3@gmail.com", passwordEncoder.encode("user3"), rolesForUser);
         user3.setActivated(true);
-        userService.saveUser(user3);
+        userRepository.save(user3);
         User user4 = new User("user4", "user4@gmail.com", passwordEncoder.encode("user4"), rolesForUser);
         user4.setActivated(true);
-        userService.saveUser(user4);
+        userRepository.save(user4);
         User user5 = new User("user5", "user5@gmail.com", passwordEncoder.encode("user5"), rolesForUser);
         user5.setActivated(true);
-        userService.saveUser(user5);
+        userRepository.save(user5);
         User user6 = new User("user6", "user6@gmail.com", passwordEncoder.encode("user6"), rolesForUser);
         user6.setActivated(true);
-        userService.saveUser(user6);
+        userRepository.save(user6);
         User user7 = new User("user7", "user7@gmail.com", passwordEncoder.encode("user7"), rolesForUser);
         user7.setActivated(true);
-        userService.saveUser(user7);
+        userRepository.save(user7);
         User user8 = new User("user8", "user8@gmail.com", passwordEncoder.encode("user8"), rolesForUser);
         user8.setActivated(true);
-        userService.saveUser(user8);
+        userRepository.save(user8);
         User user9 = new User("user9", "user9@gmail.com", passwordEncoder.encode("user9"), rolesForUser);
         user9.setActivated(true);
-        userService.saveUser(user9);
+        userRepository.save(user9);
         User user10 = new User("user10", "user10@gmail.com", passwordEncoder.encode("user10"), rolesForUser);
         user10.setActivated(true);
-        userService.saveUser(user10);
+        userRepository.save(user10);
         User admin = new User("admin", "admin@gmail.com", passwordEncoder.encode("admin"), rolesForAdmin);
         admin.setActivated(true);
-        userService.saveUser(admin);
+        userRepository.save(admin);
         User admin2 = new User("admin2", "admin2@gmail.com", passwordEncoder.encode("admin2"), rolesForAdmin);
         admin2.setActivated(true);
-        userService.saveUser(admin2);
+        userRepository.save(admin2);
         User lukasz94w = new User("lukasz94w", "lukasz94w@wp.pl", passwordEncoder.encode("lukasz94w"), rolesForUser);
         lukasz94w.setActivated(true);
-        userService.saveUser(lukasz94w);
+        userRepository.save(lukasz94w);
 
         //CATEGORIES
         categoryRepository.save(new Category(EnumeratedCategory.PROGRAMMING));
@@ -212,6 +214,6 @@ public class TestDataConstructor {
 
     private void savePostForTestConstructor(Post post) {
         postRepository.save(post);
-        MapperDto.mapToPostDto(post);
+        mapperDto.mapToPostDto(post);
     }
 }

@@ -15,7 +15,6 @@ public class UserDetailsImpl implements UserDetails {
 
     private final Long id;
     private final String username;
-    private final String email;
     @JsonIgnore
     private final String password;
     private final boolean enabled;
@@ -23,11 +22,10 @@ public class UserDetailsImpl implements UserDetails {
     private final boolean isBanned;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String username, String email, String password, boolean enabled,
+    public UserDetailsImpl(Long id, String username, String password, boolean enabled,
                            Collection<? extends GrantedAuthority> authorities, boolean isAdmin, boolean isBanned) {
         this.id = id;
         this.username = username;
-        this.email = email;
         this.password = password;
         this.enabled = enabled;
         this.authorities = authorities;
@@ -43,7 +41,6 @@ public class UserDetailsImpl implements UserDetails {
         return new UserDetailsImpl(
                 user.getId(),
                 user.getName(),
-                user.getEmail(),
                 user.getPassword(),
                 user.isActivated(),
                 authorities,
@@ -58,10 +55,6 @@ public class UserDetailsImpl implements UserDetails {
 
     public Long getId() {
         return id;
-    }
-
-    public boolean isAdmin() {
-        return isAdmin;
     }
 
     @Override

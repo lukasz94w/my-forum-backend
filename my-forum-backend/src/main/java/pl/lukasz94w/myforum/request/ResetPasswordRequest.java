@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
-public class SendResetEmailRequest {
+public class ResetPasswordRequest {
 
     @NotBlank
     @Size(min = 4, max = 50)

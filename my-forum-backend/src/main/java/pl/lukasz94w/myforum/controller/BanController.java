@@ -1,6 +1,6 @@
 package pl.lukasz94w.myforum.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,31 +12,28 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/ban")
 public class BanController {
 
     private final BanService banService;
 
-    @Autowired
-    public BanController(BanService banService) {
-        this.banService = banService;
+    @PreAuthorize("hasRole ('ADMIN')")
+    @PutMapping("/banUser")
+    public ResponseEntity<Void> banUser(@Valid @RequestBody BanRequest banRequest) {
+        banService.banUser(banRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole ('ADMIN')")
-    @PostMapping("/banUser")
-    public ResponseEntity<HttpStatus> banUser(@Valid @RequestBody BanRequest banRequest) {
-        return banService.banUser(banRequest);
+    @PutMapping("/unBanUser")
+    public ResponseEntity<Void> unBanUser(@RequestBody @NotBlank String userName) {
+        banService.unBanUser(userName);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole ('ADMIN')")
-    @PostMapping("/unBanUser")
-    public ResponseEntity<HttpStatus> unBanUser(@RequestBody @NotBlank String userName) {
-        return banService.unBanUser(userName);
-    }
-
-    // no authorization required because banned user cannot authorize
     @GetMapping("/checkBanStatus/{userName}")
-    public boolean checkBanStatus(@NotBlank @PathVariable String userName) {
-        return banService.checkBanStatus(userName);
+    public ResponseEntity<Boolean> checkBanStatus(@NotBlank @PathVariable String userName) {
+        return new ResponseEntity<>(banService.checkBanStatus(userName), HttpStatus.OK);
     }
 }

@@ -1,14 +1,15 @@
 package pl.lukasz94w.myforum.service.util;
 
+import org.springframework.stereotype.Component;
 import pl.lukasz94w.myforum.model.User;
 
 import java.util.LinkedList;
 import java.util.List;
 
+@Component
 public class UserServiceUtil {
 
-
-    public static List<Long> prepareNumberOfEntriesInPageableUsers(List<User> listOfLatest10PageableUsers, List<Object[]> foundedNumberOfEntriesInPageableUsers) {
+    public List<Long> prepareNumberOfEntriesInPageableUsers(List<User> listOfLatest10PageableUsers, List<Object[]> foundedNumberOfEntriesInPageableUsers) {
         List<Long> numberOfEntries = new LinkedList<>();
 
         for (User latestUser : listOfLatest10PageableUsers) {
@@ -18,7 +19,7 @@ public class UserServiceUtil {
         return numberOfEntries;
     }
 
-    private static Long countNumberOfEntriesByUser(User latestUser, List<Object[]> foundedNumberOfEntriesInPageableUsers) {
+    private Long countNumberOfEntriesByUser(User latestUser, List<Object[]> foundedNumberOfEntriesInPageableUsers) {
 
         for (Object[] object : foundedNumberOfEntriesInPageableUsers) {
             User user = (User) object[0];

@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.response;
+package pl.lukasz94w.myforum.response.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,12 +7,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class PostDto {
+public class TopicDto {
     private final Long id;
-    private final String content;
+    private final String title;
     private final String user;
     private final LocalDateTime dateTime;
-    private final byte[] profilePic;
-    private final int number;
-    private final boolean moderated;
 }

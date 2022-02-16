@@ -1,19 +1,20 @@
 package pl.lukasz94w.myforum.service.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import org.springframework.stereotype.Component;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.ProfilePic;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.enums.EnumeratedCategory;
+import pl.lukasz94w.myforum.response.dto.LastActivityInCategoryDto;
+import pl.lukasz94w.myforum.response.dto.LastActivityInPageableTopicDto;
 
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
+@Component
 public class TopicServiceUtil {
 
-    public static List<Long> prepareNumbersOfEntries(List<Object[]> topicByCategoriesCount) {
+    public List<Long> prepareNumbersOfEntries(List<Object[]> topicByCategoriesCount) {
         List<Long> fullListOfEntriesByCategoriesCount = new LinkedList<>();
 
         for (EnumeratedCategory enumeratedCategory : EnumeratedCategory.values()) {
@@ -23,7 +24,7 @@ public class TopicServiceUtil {
         return fullListOfEntriesByCategoriesCount;
     }
 
-    public static long getCountOfEntriesInCategory(String category, List<Object[]> countedEntriesByCategory) {
+    private long getCountOfEntriesInCategory(String category, List<Object[]> countedEntriesByCategory) {
 
         for (Object[] object : countedEntriesByCategory) {
             String entriesCategory = object[1].toString();
@@ -35,7 +36,7 @@ public class TopicServiceUtil {
         return 0;
     }
 
-    public static Post findLatestPostInTopic(Topic topic, List<Post> listOfPosts) {
+    private Post findLatestPostInTopic(Topic topic, List<Post> listOfPosts) {
 
         for (Post post : listOfPosts) {
             if (post.getTopic().equals(topic))
@@ -44,8 +45,8 @@ public class TopicServiceUtil {
         return null;
     }
 
-    public static List<LastActivityInCategory> prepareLastActivitiesInEachCategory(List<Topic> latestTopicsInEachCategory, List<Post> latestPostInEachOfLatestTopics) {
-        List<LastActivityInCategory> fullListOfLastActivitiesInCategory = new LinkedList<>();
+    public List<LastActivityInCategoryDto> prepareLastActivitiesInEachCategory(List<Topic> latestTopicsInEachCategory, List<Post> latestPostInEachOfLatestTopics) {
+        List<LastActivityInCategoryDto> fullListOfLastActivitiesInCategory = new LinkedList<>();
 
         for (EnumeratedCategory enumeratedCategory : EnumeratedCategory.values()) {
             fullListOfLastActivitiesInCategory.add(findLastTopicInCategory(enumeratedCategory.toString(), latestTopicsInEachCategory, latestPostInEachOfLatestTopics));
@@ -54,7 +55,7 @@ public class TopicServiceUtil {
         return fullListOfLastActivitiesInCategory;
     }
 
-    public static LastActivityInCategory findLastTopicInCategory(String category, List<Topic> latestTopicsInEachCategory, List<Post> latestPostInEachOfLatestTopics) {
+    private LastActivityInCategoryDto findLastTopicInCategory(String category, List<Topic> latestTopicsInEachCategory, List<Post> latestPostInEachOfLatestTopics) {
 
         for (Topic latestTopicInEachCategory : latestTopicsInEachCategory) {
             if (latestTopicInEachCategory.getCategory().toString().equals(category)) {
@@ -64,42 +65,42 @@ public class TopicServiceUtil {
         return null;
     }
 
-    public static LastActivityInCategory getLatestActivityInTopic(Topic foundTopic, List<Post> latestPostInEachOfLatestTopics) {
-        LastActivityInCategory lastActivityInCategory;
+    private LastActivityInCategoryDto getLatestActivityInTopic(Topic foundTopic, List<Post> latestPostInEachOfLatestTopics) {
+        LastActivityInCategoryDto lastActivityInCategoryDto;
 
         Post latestPost = findLatestPostInTopic(foundTopic, latestPostInEachOfLatestTopics);
         if (latestPost == null) {
-            lastActivityInCategory = new LastActivityInCategory(foundTopic.getTitle(), foundTopic.getId(), foundTopic.getUser().getName(), getProfilePicData(foundTopic.getUser().getProfilePic()), foundTopic.getDateTime(), 1);
+            lastActivityInCategoryDto = new LastActivityInCategoryDto(foundTopic.getTitle(), foundTopic.getId(), foundTopic.getUser().getName(), getProfilePicData(foundTopic.getUser().getProfilePic()), foundTopic.getDateTime(), 1);
         } else {
-            lastActivityInCategory = new LastActivityInCategory(foundTopic.getTitle(), foundTopic.getId(), latestPost.getUser().getName(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTime(), latestPost.getNumber());
+            lastActivityInCategoryDto = new LastActivityInCategoryDto(foundTopic.getTitle(), foundTopic.getId(), latestPost.getUser().getName(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTime(), latestPost.getNumber());
         }
 
-        return lastActivityInCategory;
+        return lastActivityInCategoryDto;
     }
 
-    public static byte[] getProfilePicData(ProfilePic profilePic) {
+    private byte[] getProfilePicData(ProfilePic profilePic) {
         if (profilePic != null) {
             return profilePic.getData();
         }
         return null;
     }
 
-    public static List<LastActivityInPageableTopic> prepareLastActivitiesInPageableTopics(List<Topic> listOfLatest10Topics, List<Post> listOfLatestPosts) {
-        List<LastActivityInPageableTopic> lastActivitiesInPageableTopics = new LinkedList<>();
+    public List<LastActivityInPageableTopicDto> prepareLastActivitiesInPageableTopics(List<Topic> listOfLatest10Topics, List<Post> listOfLatestPosts) {
+        List<LastActivityInPageableTopicDto> lastActivitiesInPageableTopics = new LinkedList<>();
 
         for (Topic topic : listOfLatest10Topics) {
             Post latestPost = findLatestPostInTopic(topic, listOfLatestPosts);
             if (latestPost == null) {
-                lastActivitiesInPageableTopics.add(new LastActivityInPageableTopic(topic.getUser().getName(), getProfilePicData(topic.getUser().getProfilePic()), topic.getDateTime(), 1));
+                lastActivitiesInPageableTopics.add(new LastActivityInPageableTopicDto(topic.getUser().getName(), getProfilePicData(topic.getUser().getProfilePic()), topic.getDateTime(), 1));
             } else {
-                lastActivitiesInPageableTopics.add(new LastActivityInPageableTopic(latestPost.getUser().getName(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTime(), latestPost.getNumber()));
+                lastActivitiesInPageableTopics.add(new LastActivityInPageableTopicDto(latestPost.getUser().getName(), getProfilePicData(latestPost.getUser().getProfilePic()), latestPost.getDateTime(), latestPost.getNumber()));
             }
         }
 
         return lastActivitiesInPageableTopics;
     }
 
-    public static List<Long> prepareNumberOfAnswersInPageableTopics(List<Topic> listOfLatest10Topics, List<Object[]> numberOfPostsInPageableTopics) {
+    public List<Long> prepareNumberOfAnswersInPageableTopics(List<Topic> listOfLatest10Topics, List<Object[]> numberOfPostsInPageableTopics) {
         List<Long> numberOfPosts = new LinkedList<>();
 
         for (Topic latestTopic : listOfLatest10Topics) {
@@ -109,7 +110,7 @@ public class TopicServiceUtil {
         return numberOfPosts;
     }
 
-    private static Long countNumberOfAnswersInTopic(Topic latestTopic, List<Object[]> numberOfPostsInPageableTopics) {
+    private Long countNumberOfAnswersInTopic(Topic latestTopic, List<Object[]> numberOfPostsInPageableTopics) {
 
         for (Object[] object : numberOfPostsInPageableTopics) {
             Topic topic = (Topic) object[0];
@@ -120,26 +121,6 @@ public class TopicServiceUtil {
         }
 
         return 0L;
-    }
-
-    @AllArgsConstructor
-    @Getter
-    public static class LastActivityInCategory {
-        private String topicName;
-        private Long topicId;
-        private String userName;
-        private byte[] userProfilePic;
-        private LocalDateTime timeOfLastActivity;
-        private int postNumber;
-    }
-
-    @AllArgsConstructor
-    @Getter
-    public static class LastActivityInPageableTopic {
-        private String userName;
-        private byte[] userProfilePic;
-        private LocalDateTime timeOfLastActivity;
-        private int postNumber;
     }
 
 }

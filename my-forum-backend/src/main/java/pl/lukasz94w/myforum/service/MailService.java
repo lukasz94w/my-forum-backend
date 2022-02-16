@@ -1,6 +1,6 @@
 package pl.lukasz94w.myforum.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -11,14 +11,10 @@ import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 
 @Service
+@RequiredArgsConstructor
 public class MailService {
 
     private final JavaMailSender javaMailSender;
-
-    @Autowired
-    public MailService(JavaMailSender javaMailSender) {
-        this.javaMailSender = javaMailSender;
-    }
 
     public void sendActivateAccountEmail(String to, String activationLink) throws MessagingException, UnsupportedEncodingException, MailSendException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();

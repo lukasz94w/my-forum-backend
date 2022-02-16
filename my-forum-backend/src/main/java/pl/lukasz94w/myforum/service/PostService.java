@@ -1,14 +1,13 @@
 package pl.lukasz94w.myforum.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import pl.lukasz94w.myforum.exception.exception.PostAddException;
+import pl.lukasz94w.myforum.exception.enums.PostAddExceptionEnum;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
@@ -17,10 +16,10 @@ import pl.lukasz94w.myforum.repository.TopicRepository;
 import pl.lukasz94w.myforum.repository.UserRepository;
 import pl.lukasz94w.myforum.request.NewPostContent;
 import pl.lukasz94w.myforum.request.PostStatus;
-import pl.lukasz94w.myforum.response.PostDto;
-import pl.lukasz94w.myforum.response.PostDto2;
-import pl.lukasz94w.myforum.response.mapper.MapperDto;
-import pl.lukasz94w.myforum.security.user.UserDetailsImpl;
+import pl.lukasz94w.myforum.response.dto.PostDto;
+import pl.lukasz94w.myforum.response.dto.PostDto2;
+import pl.lukasz94w.myforum.response.dto.mapper.MapperDto;
+import pl.lukasz94w.myforum.security.auth.AuthorizedUserProvider;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -29,32 +28,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final TopicRepository topicRepository;
+    private final MapperDto mapperDto;
+    private final AuthorizedUserProvider authorizedUserProvider;
 
-    @Autowired
-    public PostService(PostRepository postRepository, UserRepository userRepository, TopicRepository topicRepository) {
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-        this.topicRepository = topicRepository;
-    }
-
-    public ResponseEntity<HttpStatus> addPost(NewPostContent newPostContent, Authentication authentication) {
-        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
-        User authenticatedUser = userRepository.findByName(userDetailsImpl.getUsername());
+    public void addPost(NewPostContent newPostContent) {
+        User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
 
         Topic topicOfPost = topicRepository.findTopicById(newPostContent.getTopicId());
 
-        // when topic was deleted by admin
         if (topicOfPost == null) {
-            return new ResponseEntity<>(HttpStatus.GONE);
+            throw new PostAddException(PostAddExceptionEnum.TOPIC_DOESNT_EXIST);
         }
 
         if (topicOfPost.isClosed()) {
-            return new ResponseEntity<>(HttpStatus.LOCKED);
+            throw new PostAddException(PostAddExceptionEnum.TOPIC_WAS_CLOSED);
         }
 
         topicOfPost.setTimeOfActualization(LocalDateTime.now());
@@ -62,14 +55,12 @@ public class PostService {
         int numberOfPostsInTopic = postRepository.countPostByTopic(topicOfPost);
         Post newPost = new Post(newPostContent.getContent(), numberOfPostsInTopic + 1, topicOfPost, authenticatedUser);
         postRepository.save(newPost);
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    public ResponseEntity<HttpStatus> changeStatus(PostStatus postStatus) {
+    public void changeStatus(PostStatus postStatus) {
         Post post = postRepository.findPostById(postStatus.getPostId());
         post.setModerated(postStatus.isModerated());
         postRepository.save(post);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     public Map<String, Object> findPageablePostsByTopicId(int page, Long id) {
@@ -77,7 +68,7 @@ public class PostService {
         Page<Post> pageablePosts = postRepository.findByTopicId(id, paging);
 
         Collection<PostDto> pageablePostsDto = pageablePosts.stream()
-                .map(MapperDto::mapToPostDto)
+                .map(mapperDto::mapToPostDto)
                 .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();
@@ -94,7 +85,7 @@ public class PostService {
         Page<Post> pageablePosts = postRepository.findByContentContainsIgnoreCase(query, paging);
 
         Collection<PostDto2> pageablePostsDto2 = pageablePosts.stream()
-                .map(MapperDto::mapToPostDto2)
+                .map(mapperDto::mapToPostDto2)
                 .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();

@@ -1,6 +1,6 @@
 package pl.lukasz94w.myforum.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,17 +20,11 @@ import pl.lukasz94w.myforum.security.user.UserDetailsServiceImpl;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsServiceImpl userDetailsServiceImpl;
-
     private final AuthEntryPointJwt unauthorizedHandler;
-
-    @Autowired
-    public WebSecurityConfig(UserDetailsServiceImpl userDetailsServiceImpl, AuthEntryPointJwt unauthorizedHandler) {
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
-        this.unauthorizedHandler = unauthorizedHandler;
-    }
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -77,6 +71,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        http.headers().frameOptions().disable(); //H2 database
+        http.headers().frameOptions().disable(); // H2 database
     }
 }

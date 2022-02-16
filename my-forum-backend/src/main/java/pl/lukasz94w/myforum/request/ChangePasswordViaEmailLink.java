@@ -6,13 +6,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
-public class ChangePasswordThroughUserSettings {
-
-    @NotBlank
-    @Size(min = 5, max = 30)
-    private String currentPassword;
+public class ChangePasswordViaEmailLink {
 
     @NotBlank
     @Size(min = 5, max = 30)
     private String newPassword;
+
+    @NotBlank
+    @Size(min = 30, max = 30)
+    private String receivedToken;
 }
