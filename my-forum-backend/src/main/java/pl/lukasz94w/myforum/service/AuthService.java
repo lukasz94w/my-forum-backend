@@ -198,12 +198,12 @@ public class AuthService {
         String confirmLink = mailServiceUtil.constructConfirmLink(newToken, serverUrl);
         try {
             mailService.sendActivateAccountEmail(activateToken.getUser().getEmail(), confirmLink);
-            activateTokenRepository.save(activateToken);
         } catch (MessagingException | UnsupportedEncodingException | MailSendException exception) {
             logger.error(exception.getMessage());
             throw new ResendActivationTokenException("Failed to send email. Try again later");
         }
 
+        activateTokenRepository.save(activateToken);
         return new SuccessResponse("Email with new confirmation link was sent. Check your email inbox for further instructions");
     }
 }
