@@ -10,14 +10,16 @@ import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, Long> {
-    Topic findTopicById(final Long id);
+    Optional<Topic> findById(final Long id);
+
+    Topic findTopicById(Long id);
 
     Page<Topic> findTopicsByCategory(Category category, Pageable pageable);
 
-    //this query will return List<Object[]>
     @Query(value = "select count(topic.category), topic.category FROM Topic topic group by topic.category")
     List<Object[]> countTopicsByCategories();
 

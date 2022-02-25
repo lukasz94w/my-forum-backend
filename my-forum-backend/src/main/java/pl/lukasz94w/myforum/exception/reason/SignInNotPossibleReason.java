@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.exception.enums;
+package pl.lukasz94w.myforum.exception.reason;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SignInExceptionEnum {
+public enum SignInNotPossibleReason {
     ACCOUNT_NOT_ACTIVATED(ExceptionMessage.ACCOUNT_NOT_ACTIVATED_MESSAGE, HttpStatus.TOO_EARLY),
     USER_IS_BANNED(ExceptionMessage.USER_IS_BANNED_MESSAGE, HttpStatus.LOCKED),
     BAD_CREDENTIALS(ExceptionMessage.BAD_CREDENTIALS_MESSAGE, HttpStatus.FORBIDDEN);

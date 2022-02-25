@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import pl.lukasz94w.myforum.exception.enums.*;
+import pl.lukasz94w.myforum.exception.reason.*;
 import pl.lukasz94w.myforum.exception.exception.*;
 import pl.lukasz94w.myforum.response.message.ErrorResponse;
 
@@ -30,23 +30,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(PostAddException.class)
     public ResponseEntity<ErrorResponse> handleExceptionsWhileAddingPost(PostAddException exception) {
-        PostAddExceptionEnum exceptionEnum = exception.getPostAddExceptionEnum();
-        return new ResponseEntity<>(new ErrorResponse(exceptionEnum.getExceptionMessage()), exceptionEnum.getHttpStatus());
+        PostAddExceptionReason reason = exception.getPostAddExceptionReason();
+        return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
     }
 
     @ExceptionHandler(SignUpException.class)
     public ResponseEntity<ErrorResponse> handleSignUpExceptions(SignUpException exception) {
-        SignUpExceptionEnum exceptionEnum = exception.getSignUpExceptionEnum();
-        return new ResponseEntity<>(new ErrorResponse(exceptionEnum.getExceptionMessage()), exceptionEnum.getHttpStatus());
+        SignUpExceptionReason reason = exception.getSignUpExceptionReason();
+        return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
     }
 
     @ExceptionHandler(SignInException.class)
     public ResponseEntity<ErrorResponse> handleSignInExceptions(SignInException exception) {
-        SignInExceptionEnum exceptionEnum = exception.getSignInExceptionEnum();
-        if (exceptionEnum.equals(SignInExceptionEnum.USER_IS_BANNED)) {
-            return new ResponseEntity<>(new ErrorResponse(exceptionEnum.getExceptionMessage(), exception.getBannedUserData()), exceptionEnum.getHttpStatus());
+        SignInNotPossibleReason reason = exception.getSignInNotPossibleReason();
+        if (reason.equals(SignInNotPossibleReason.USER_IS_BANNED)) {
+            return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage(), exception.getBannedUserData()), reason.getHttpStatus());
         } else {
-            return new ResponseEntity<>(new ErrorResponse(exceptionEnum.getExceptionMessage()), exceptionEnum.getHttpStatus());
+            return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
         }
     }
 
@@ -57,18 +57,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ChangePasswordViaEmailLinkException.class)
     public ResponseEntity<ErrorResponse> handleExceptionsWhenChangePasswordViaEmailLink(ChangePasswordViaEmailLinkException exception) {
-        ChangePasswordViaEmailLinkExceptionEnum exceptionEnum = exception.getChangePasswordViaEmailLinkExceptionEnum();
-        return new ResponseEntity<>(new ErrorResponse(exceptionEnum.getExceptionMessage()), exceptionEnum.getHttpStatus());
+        ChangePasswordViaEmailLinkExceptionReason reason = exception.getChangePasswordViaEmailLinkExceptionReason();
+        return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
     }
 
     @ExceptionHandler(ActivateAccountException.class)
     public ResponseEntity<ErrorResponse> handleActivateAccountExceptions(ActivateAccountException exception) {
-        ActivateAccountExceptionEnum exceptionEnum = exception.getActivateAccountExceptionEnum();
-        return new ResponseEntity<>(new ErrorResponse(exceptionEnum.getExceptionMessage()), exceptionEnum.getHttpStatus());
+        AccountActivationNotPossibleReason reason = exception.getAccountActivationNotPossibleReason();
+        return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
     }
 
     @ExceptionHandler(ResendActivationTokenException.class)
     public ResponseEntity<ErrorResponse> handleResendActivationTokenException(ResendActivationTokenException exception) {
         return new ResponseEntity<>(new ErrorResponse(exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ForumItemNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleForumItemNotFoundException(ForumItemNotFoundException exception) {
+        return new ResponseEntity<>(new ErrorResponse(exception.getForumItemNotFoundExceptionReason().getExceptionMessage()), HttpStatus.NOT_FOUND);
     }
 }

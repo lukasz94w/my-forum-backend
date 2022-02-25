@@ -6,6 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import pl.lukasz94w.myforum.exception.reason.ForumItemNotFoundExceptionReason;
+import pl.lukasz94w.myforum.exception.exception.ForumItemNotFoundException;
 import pl.lukasz94w.myforum.model.Category;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
@@ -43,8 +45,7 @@ public class TopicService {
     public void createTopic(NewTopicContent newTopicContent) {
         User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
 
-        EnumeratedCategory enumeratedCategory = EnumeratedCategory.valueOf(newTopicContent.getCategory().toUpperCase());
-        Category topicCategory = categoryRepository.findByEnumeratedCategory(enumeratedCategory);
+        Category topicCategory = getCategoryIfExistOrThrowException(newTopicContent.getCategory());
 
         Topic newTopic = new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory);
         this.topicRepository.save(newTopic);
@@ -63,11 +64,14 @@ public class TopicService {
     }
 
     public TopicDto3 getTopicById(Long id) {
-        return mapperDto.mapToTopicDto3(topicRepository.getById(id));
+        return mapperDto.mapToTopicDto3(topicRepository
+                .findById(id)
+                .orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.TOPIC_DOESNT_EXIST)));
     }
 
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {
-        Category chosenCategory = categoryRepository.findByEnumeratedCategory(EnumeratedCategory.valueOf(category.toUpperCase(Locale.ROOT)));
+        Category chosenCategory = getCategoryIfExistOrThrowException(category);
+
         Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findTopicsByCategory(chosenCategory, paging);
         return buildResponse(pageableTopics);
@@ -141,5 +145,14 @@ public class TopicService {
         response.put("totalPages", pageableTopics.getTotalPages());
 
         return response;
+    }
+
+    private Category getCategoryIfExistOrThrowException(String category) {
+        EnumeratedCategory enumeratedCategory = Arrays.stream(EnumeratedCategory.values())
+                .filter(e -> e.name().equals(category.toUpperCase()))
+                .findFirst()
+                .orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.CATEGORY_DOESNT_EXIST));
+
+        return categoryRepository.findByEnumeratedCategory(enumeratedCategory);
     }
 }

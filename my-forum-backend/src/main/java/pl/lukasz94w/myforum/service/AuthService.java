@@ -10,11 +10,11 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.lukasz94w.myforum.exception.enums.ActivateAccountExceptionEnum;
-import pl.lukasz94w.myforum.exception.enums.ChangePasswordViaEmailLinkExceptionEnum;
+import pl.lukasz94w.myforum.exception.reason.AccountActivationNotPossibleReason;
+import pl.lukasz94w.myforum.exception.reason.ChangePasswordViaEmailLinkExceptionReason;
 import pl.lukasz94w.myforum.exception.exception.*;
-import pl.lukasz94w.myforum.exception.enums.SignInExceptionEnum;
-import pl.lukasz94w.myforum.exception.enums.SignUpExceptionEnum;
+import pl.lukasz94w.myforum.exception.reason.SignInNotPossibleReason;
+import pl.lukasz94w.myforum.exception.reason.SignUpExceptionReason;
 import pl.lukasz94w.myforum.model.ActivateToken;
 import pl.lukasz94w.myforum.model.PasswordToken;
 import pl.lukasz94w.myforum.model.Role;
@@ -56,11 +56,11 @@ public class AuthService {
 
     public SuccessResponse signUp(SignUpRequest signUpRequest) {
         if (userRepository.existsByName(signUpRequest.getUsername())) {
-            throw new SignUpException(SignUpExceptionEnum.USERNAME_IS_TAKEN);
+            throw new SignUpException(SignUpExceptionReason.USERNAME_IS_TAKEN);
         }
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new SignUpException(SignUpExceptionEnum.EMAIL_IS_TAKEN);
+            throw new SignUpException(SignUpExceptionReason.EMAIL_IS_TAKEN);
         }
 
         User user = new User();
@@ -79,7 +79,7 @@ public class AuthService {
             mailService.sendActivateAccountEmail(signUpRequest.getEmail(), confirmLink); // it can also be done using @Async or by publishing event
         } catch (MessagingException | UnsupportedEncodingException | MailSendException exception) {
             logger.error(exception.getMessage());
-            throw new SignUpException(SignUpExceptionEnum.SENDING_MAIL_FAILED);
+            throw new SignUpException(SignUpExceptionReason.SENDING_MAIL_FAILED);
         }
 
         activateTokenRepository.save(new ActivateToken(user, token));
@@ -90,14 +90,14 @@ public class AuthService {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         } catch (DisabledException exception) {
-            throw new SignInException(SignInExceptionEnum.ACCOUNT_NOT_ACTIVATED);
+            throw new SignInException(SignInNotPossibleReason.ACCOUNT_NOT_ACTIVATED);
         } catch (LockedException exception) {
             Map<String, Object> bannedUserData = new HashMap<>();
             bannedUserData.put("userName", signInRequest.getUsername());
             bannedUserData.put("dateOfBan", userRepository.findByName(signInRequest.getUsername()).getBan().getDateAndTimeOfBan().atZone(ZoneId.systemDefault()).toEpochSecond());
-            throw new SignInException(SignInExceptionEnum.USER_IS_BANNED, bannedUserData);
+            throw new SignInException(SignInNotPossibleReason.USER_IS_BANNED, bannedUserData);
         } catch (BadCredentialsException exception) {
-            throw new SignInException(SignInExceptionEnum.BAD_CREDENTIALS);
+            throw new SignInException(SignInNotPossibleReason.BAD_CREDENTIALS);
         }
 
         User signedInUser = userRepository.findByName(signInRequest.getUsername());
@@ -152,11 +152,11 @@ public class AuthService {
         PasswordToken passwordToken = passwordTokenRepository.findByToken(changePasswordViaEmailLink.getReceivedToken());
 
         if (passwordToken == null) {
-            throw new ChangePasswordViaEmailLinkException(ChangePasswordViaEmailLinkExceptionEnum.TOKEN_NOT_FOUND);
+            throw new ChangePasswordViaEmailLinkException(ChangePasswordViaEmailLinkExceptionReason.TOKEN_NOT_FOUND);
         }
 
         if (passwordToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new ChangePasswordViaEmailLinkException(ChangePasswordViaEmailLinkExceptionEnum.TOKEN_EXPIRED);
+            throw new ChangePasswordViaEmailLinkException(ChangePasswordViaEmailLinkExceptionReason.TOKEN_EXPIRED);
         }
 
         User user = userRepository.findByName(passwordToken.getUser().getName());
@@ -171,16 +171,16 @@ public class AuthService {
         ActivateToken activateToken = activateTokenRepository.findByToken(activationToken);
 
         if (activateToken == null) {
-            throw new ActivateAccountException(ActivateAccountExceptionEnum.TOKEN_NOT_FOUND);
+            throw new ActivateAccountException(AccountActivationNotPossibleReason.TOKEN_NOT_FOUND);
         }
 
         User user = activateToken.getUser();
         if (user.isActivated()) {
-            throw new ActivateAccountException(ActivateAccountExceptionEnum.ACCOUNT_ALREADY_ACTIVATED);
+            throw new ActivateAccountException(AccountActivationNotPossibleReason.ACCOUNT_ALREADY_ACTIVATED);
         }
 
         if (activateToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new ActivateAccountException(ActivateAccountExceptionEnum.TOKEN_EXPIRED);
+            throw new ActivateAccountException(AccountActivationNotPossibleReason.TOKEN_EXPIRED);
         }
 
         user.setActivated(true);

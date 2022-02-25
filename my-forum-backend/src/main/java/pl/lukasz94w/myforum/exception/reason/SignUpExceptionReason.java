@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.exception.enums;
+package pl.lukasz94w.myforum.exception.reason;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SignUpExceptionEnum {
+public enum SignUpExceptionReason {
     USERNAME_IS_TAKEN(ExceptionMessage.USERNAME_IS_TAKEN_MESSAGE, HttpStatus.BAD_REQUEST),
     EMAIL_IS_TAKEN(ExceptionMessage.EMAIL_IS_TAKEN_MESSAGE, HttpStatus.BAD_REQUEST),
     SENDING_MAIL_FAILED(ExceptionMessage.SENDING_MAIL_FAILED_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR);
