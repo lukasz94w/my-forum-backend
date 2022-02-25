@@ -6,8 +6,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import pl.lukasz94w.myforum.exception.reason.ForumItemNotFoundExceptionReason;
+import pl.lukasz94w.myforum.exception.exception.ForumItemNotFoundException;
 import pl.lukasz94w.myforum.exception.exception.PostAddException;
-import pl.lukasz94w.myforum.exception.enums.PostAddExceptionEnum;
+import pl.lukasz94w.myforum.exception.reason.PostAddExceptionReason;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.Topic;
 import pl.lukasz94w.myforum.model.User;
@@ -40,14 +42,12 @@ public class PostService {
     public void addPost(NewPostContent newPostContent) {
         User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
 
-        Topic topicOfPost = topicRepository.findTopicById(newPostContent.getTopicId());
-
-        if (topicOfPost == null) {
-            throw new PostAddException(PostAddExceptionEnum.TOPIC_DOESNT_EXIST);
-        }
+        Topic topicOfPost = topicRepository
+                .findById(newPostContent.getTopicId())
+                .orElseThrow(() -> new PostAddException(PostAddExceptionReason.TOPIC_DOESNT_EXIST));
 
         if (topicOfPost.isClosed()) {
-            throw new PostAddException(PostAddExceptionEnum.TOPIC_WAS_CLOSED);
+            throw new PostAddException(PostAddExceptionReason.TOPIC_WAS_CLOSED);
         }
 
         topicOfPost.setTimeOfActualization(LocalDateTime.now());
@@ -66,6 +66,10 @@ public class PostService {
     public Map<String, Object> findPageablePostsByTopicId(int page, Long id) {
         Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").ascending());
         Page<Post> pageablePosts = postRepository.findByTopicId(id, paging);
+
+        if (pageablePosts.getContent().size() == 0) {
+            throw new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.POST_DOESNT_EXIST);
+        }
 
         Collection<PostDto> pageablePostsDto = pageablePosts.stream()
                 .map(mapperDto::mapToPostDto)

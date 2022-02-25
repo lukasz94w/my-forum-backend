@@ -8,7 +8,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import pl.lukasz94w.myforum.exception.reason.ForumItemNotFoundExceptionReason;
 import pl.lukasz94w.myforum.exception.exception.ChangePasswordViaUserSettingsException;
+import pl.lukasz94w.myforum.exception.exception.ForumItemNotFoundException;
 import pl.lukasz94w.myforum.exception.exception.ProfilePicUploadException;
 import pl.lukasz94w.myforum.model.Post;
 import pl.lukasz94w.myforum.model.ProfilePic;
@@ -48,7 +50,7 @@ public final class UserService {
     private final MapperDto mapperDto;
 
     public UserDto getUserInfo(String username) {
-        return mapperDto.mapToUserDto2(userRepository.findByName(username));
+        return mapperDto.mapToUserDto2(userRepository.findUserByName(username).orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.USER_DOESNT_EXIST)));
     }
 
     public Map<String, byte[]> getProfilePic() {

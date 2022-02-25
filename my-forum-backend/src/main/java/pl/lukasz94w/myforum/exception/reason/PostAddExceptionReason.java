@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.exception.enums;
+package pl.lukasz94w.myforum.exception.reason;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum PostAddExceptionEnum {
+public enum PostAddExceptionReason {
     TOPIC_DOESNT_EXIST(ExceptionMessage.TOPIC_DOESNT_EXIST_MESSAGE, HttpStatus.GONE),
     TOPIC_WAS_CLOSED(ExceptionMessage.TOPIC_WAS_CLOSED_MESSAGE, HttpStatus.LOCKED);
 

@@ -1,4 +1,4 @@
-package pl.lukasz94w.myforum.exception.enums;
+package pl.lukasz94w.myforum.exception.reason;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum ActivateAccountExceptionEnum {
+public enum AccountActivationNotPossibleReason {
     TOKEN_NOT_FOUND(ExceptionMessage.TOKEN_NOT_FOUND_MESSAGE, HttpStatus.NOT_FOUND),
     ACCOUNT_ALREADY_ACTIVATED(ExceptionMessage.ACCOUNT_WAS_ALREADY_ACTIVATED_MESSAGE, HttpStatus.CONFLICT),
     TOKEN_EXPIRED(ExceptionMessage.TOKEN_EXPIRED_MESSAGE, HttpStatus.GONE);
