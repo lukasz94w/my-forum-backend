@@ -22,9 +22,8 @@ public class TopicController {
 
     @PreAuthorize("hasRole ('USER')")
     @PostMapping("/addTopic")
-    public ResponseEntity<Void> createTopic(@Valid @RequestBody NewTopicContent newTopicContent) {
-        topicService.createTopic(newTopicContent);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<Long> createTopic(@Valid @RequestBody NewTopicContent newTopicContent) {
+        return new ResponseEntity<>(topicService.createTopic(newTopicContent), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole ('ADMIN')")
