@@ -1,6 +1,7 @@
 package pl.lukasz94w.myforum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,8 @@ public class PostService {
     private final TopicRepository topicRepository;
     private final MapperDto mapperDto;
     private final AuthorizedUserProvider authorizedUserProvider;
+    @Value("${pl.lukasz94w.pageableItemsNumber}")
+    private int pageablePostsNumber;
 
     public void addPost(NewPostContent newPostContent) {
         User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
@@ -64,7 +67,7 @@ public class PostService {
     }
 
     public Map<String, Object> findPageablePostsByTopicId(int page, Long id) {
-        Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").ascending());
+        Pageable paging = PageRequest.of(page, pageablePostsNumber, Sort.by("dateTime").ascending());
         Page<Post> pageablePosts = postRepository.findByTopicId(id, paging);
 
         if (pageablePosts.getContent().size() == 0) {
@@ -85,7 +88,7 @@ public class PostService {
     }
 
     public Map<String, Object> searchInPosts(int page, String query) {
-        Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").descending());
+        Pageable paging = PageRequest.of(page, pageablePostsNumber, Sort.by("dateTime").descending());
         Page<Post> pageablePosts = postRepository.findByContentContainsIgnoreCase(query, paging);
 
         Collection<PostDto2> pageablePostsDto2 = pageablePosts.stream()

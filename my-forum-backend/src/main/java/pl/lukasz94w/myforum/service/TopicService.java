@@ -1,6 +1,7 @@
 package pl.lukasz94w.myforum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,16 +42,20 @@ public class TopicService {
     private final TopicServiceUtil topicServiceUtil;
     private final MapperDto mapperDto;
     private final AuthorizedUserProvider authorizedUserProvider;
+    @Value("${pl.lukasz94w.pageableItemsNumber}")
+    private int pageableTopicsNumber;
 
-    public void createTopic(NewTopicContent newTopicContent) {
+    public long createTopic(NewTopicContent newTopicContent) {
         User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
 
         Category topicCategory = getCategoryIfExistOrThrowException(newTopicContent.getCategory());
 
-        Topic newTopic = new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory);
-        this.topicRepository.save(newTopic);
+        Topic newTopic = this.topicRepository.save(new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory));
+
         Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), 1, newTopic, authenticatedUser);
         this.postRepository.save(firstPostUnderNewTopic);
+
+        return newTopic.getId();
     }
 
     public void changeStatus(TopicStatus topicStatus) {
@@ -72,7 +77,7 @@ public class TopicService {
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {
         Category chosenCategory = getCategoryIfExistOrThrowException(category);
 
-        Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
+        Pageable paging = PageRequest.of(page, pageableTopicsNumber, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findTopicsByCategory(chosenCategory, paging);
         return buildResponse(pageableTopics);
     }
@@ -118,23 +123,23 @@ public class TopicService {
     }
 
     public Map<String, Object> searchInTopicTitles(int page, String query) {
-        Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
+        Pageable paging = PageRequest.of(page, pageableTopicsNumber, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findByTitleContainsIgnoreCase(query, paging);
         return buildResponse(pageableTopics);
     }
 
     private Map<String, Object> buildResponse(Page<Topic> pageableTopics) {
-        List<Topic> listOfLatest10Topics = pageableTopics.getContent();
-        Collection<TopicDto> pageableTopicsDto = listOfLatest10Topics.stream()
+        List<Topic> listOf10PageableTopics = pageableTopics.getContent();
+        Collection<TopicDto> pageableTopicsDto = listOf10PageableTopics.stream()
                 .map(mapperDto::mapToTopicDto2)
                 .collect(Collectors.toList());
 
         List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
+        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOf10PageableTopics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
+        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOf10PageableTopics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);

@@ -1,6 +1,7 @@
 package pl.lukasz94w.myforum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,8 @@ public final class UserService {
     private final TopicServiceUtil topicServiceUtil;
     private final UserServiceUtil userServiceUtil;
     private final MapperDto mapperDto;
+    @Value("${pl.lukasz94w.pageableItemsNumber}")
+    private int pageableUsersNumber;
 
     public UserDto getUserInfo(String username) {
         return mapperDto.mapToUserDto2(userRepository.findUserByName(username).orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.USER_DOESNT_EXIST)));
@@ -85,7 +88,7 @@ public final class UserService {
     }
 
     public Map<String, Object> findPageablePostsByUser(int page, String username) {
-        Pageable paging = PageRequest.of(page, 10, Sort.by("dateTime").descending());
+        Pageable paging = PageRequest.of(page, pageableUsersNumber, Sort.by("dateTime").descending());
         User user = userRepository.findByName(username);
         Page<Post> pageablePosts = postRepository.findByUser(user, paging);
 
@@ -104,20 +107,20 @@ public final class UserService {
 
     public Map<String, Object> findPageableTopicsByUser(int page, String username) {
         User user = userRepository.findByName(username);
-        Pageable paging = PageRequest.of(page, 10, Sort.by("timeOfActualization").descending());
+        Pageable paging = PageRequest.of(page, pageableUsersNumber, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findByUser(user, paging);
 
-        List<Topic> listOfLatest10Topics = pageableTopics.getContent();
-        Collection<TopicDto2> pageableTopicsDto = listOfLatest10Topics.stream()
+        List<Topic> listOf10PageableTopics = pageableTopics.getContent();
+        Collection<TopicDto2> pageableTopicsDto = listOf10PageableTopics.stream()
                 .map(mapperDto::mapToTopicDto2)
                 .collect(Collectors.toList());
 
         List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOfLatest10Topics, foundedNumberOfPostsInPageableTopics);
+        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOf10PageableTopics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOfLatest10Topics, listOfLatestPosts);
+        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOf10PageableTopics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);
@@ -131,19 +134,19 @@ public final class UserService {
     }
 
     public Map<String, Object> findPageableUsers(int page) {
-        Pageable paging = PageRequest.of(page, 10, Sort.by("registered").ascending());
+        Pageable paging = PageRequest.of(page, pageableUsersNumber, Sort.by("registered").ascending());
         Page<User> pageableUsers = userRepository.findAll(paging);
-        List<User> listOfLatest10PageableUsers = pageableUsers.getContent();
+        List<User> listOf10PageableUsers = pageableUsers.getContent();
 
-        Collection<UserDto> pageableUsersDto = listOfLatest10PageableUsers.stream()
+        Collection<UserDto> pageableUsersDto = listOf10PageableUsers.stream()
                 .map(mapperDto::mapToUserDto)
                 .collect(Collectors.toList());
 
         List<Long> listOfUserIds = pageableUsers.stream().map(User::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableUsers = userRepository.countPostsInPageableUsers(listOfUserIds);
         List<Object[]> foundedNumberOfTopicsInPageableUsers = userRepository.countTopicsInPageableUsers(listOfUserIds);
-        List<Long> numberOfPostsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOfLatest10PageableUsers, foundedNumberOfPostsInPageableUsers);
-        List<Long> numberOfTopicsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOfLatest10PageableUsers, foundedNumberOfTopicsInPageableUsers);
+        List<Long> numberOfPostsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOf10PageableUsers, foundedNumberOfPostsInPageableUsers);
+        List<Long> numberOfTopicsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOf10PageableUsers, foundedNumberOfTopicsInPageableUsers);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableUsers", pageableUsersDto);
