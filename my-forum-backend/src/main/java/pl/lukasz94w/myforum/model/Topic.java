@@ -36,17 +36,4 @@ public final class Topic {
     private LocalDateTime timeOfActualization = dateTime;
 
     private boolean closed = false;
-
-    @Override
-    public String toString() {
-        return "Topic{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", user=" + user +
-                ", category=" + category +
-                ", dateTime=" + dateTime +
-                ", timeOfActualization=" + timeOfActualization +
-                ", closed=" + closed +
-                '}';
-    }
 }
