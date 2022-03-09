@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("select u from User u left join fetch u.roles where u.name = :username")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.name = :username")
     Optional<User> findUserByName(@Param("username") String username);
 
     User findByName(String name);
@@ -22,20 +22,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Boolean existsByEmail(String email);
 
     @Override
-    @Query("select distinct u from User u join fetch u.roles")
+    @Query("SELECT DISTINCT u FROM User u JOIN FETCH u.roles")
     List<User> findAll();
 
     Optional<User> findByEmail(String email);
 
     @Query(value =
-            "SELECT post.user, COUNT(post.user) " +
+            "SELECT MIN(post.user), COUNT(post.user) " +
                     "FROM Post post " +
                     "WHERE post.user.id IN :userIds " +
                     "GROUP BY post.user")
     List<Object[]> countPostsInPageableUsers(@Param("userIds") List<Long> userIds);
 
     @Query(value =
-            "SELECT topic.user, COUNT(topic.user) " +
+            "SELECT MIN(topic.user), COUNT(topic.user) " +
                     "FROM Topic topic " +
                     "WHERE topic.user.id IN :userIds " +
                     "GROUP BY topic.user")

@@ -20,11 +20,11 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
 
     Page<Topic> findTopicsByCategory(Category category, Pageable pageable);
 
-    @Query(value = "select count(topic.category), topic.category FROM Topic topic group by topic.category")
+    @Query(value = "SELECT COUNT(topic.category), MIN(topic.category) FROM Topic topic GROUP BY topic.category")
     List<Object[]> countTopicsByCategories();
 
     //if there are many topics with same max(timeOfActualization) there will be returned all of them!
-    @Query(value = "select topic FROM Topic topic WHERE (topic.category, topic.timeOfActualization) IN (select topic.category, max(topic.timeOfActualization) FROM Topic topic group by topic.category)")
+    @Query(value = "SELECT topic FROM Topic topic WHERE (topic.category, topic.timeOfActualization) IN (SELECT topic.category, MAX(topic.timeOfActualization) FROM Topic topic GROUP BY topic.category)")
     List<Topic> findLatestTopicInEachCategory();
 
     Page<Topic> findByUser(User user, Pageable pageable);
