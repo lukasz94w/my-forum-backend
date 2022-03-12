@@ -13,7 +13,7 @@ public class NewTopicContent {
     private String title;
 
     @NotBlank
-    @Size(min = 5, max = 500)
+    @Size(min = 5, max = 1000)
     private String content;
 
     private String category;

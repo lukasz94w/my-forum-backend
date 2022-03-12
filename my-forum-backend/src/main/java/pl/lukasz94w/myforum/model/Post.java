@@ -20,6 +20,7 @@ public class Post {
     private Long id;
 
     @NonNull
+    @Column(length = 1000)
     private String content;
 
     private LocalDateTime dateTime = LocalDateTime.now();

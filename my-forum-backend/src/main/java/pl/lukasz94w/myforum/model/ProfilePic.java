@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 
@@ -19,5 +20,6 @@ public class ProfilePic {
     private Long id;
 
     @Lob
+    @Type(type = "org.hibernate.type.ImageType")
     private byte[] data;
 }
