@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 public class NewPostContent {
 
     @NotBlank
-    @Size(min = 5, max = 500)
+    @Size(min = 5, max = 1000)
     private String content;
 
     @NotNull
