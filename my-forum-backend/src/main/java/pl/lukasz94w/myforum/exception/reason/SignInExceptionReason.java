@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SignInNotPossibleReason {
+public enum SignInExceptionReason {
     ACCOUNT_NOT_ACTIVATED(ExceptionMessage.ACCOUNT_NOT_ACTIVATED_MESSAGE, HttpStatus.TOO_EARLY),
     USER_IS_BANNED(ExceptionMessage.USER_IS_BANNED_MESSAGE, HttpStatus.LOCKED),
     BAD_CREDENTIALS(ExceptionMessage.BAD_CREDENTIALS_MESSAGE, HttpStatus.FORBIDDEN);

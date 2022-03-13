@@ -42,8 +42,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(SignInException.class)
     public ResponseEntity<ErrorResponse> handleSignInExceptions(SignInException exception) {
-        SignInNotPossibleReason reason = exception.getSignInNotPossibleReason();
-        if (reason.equals(SignInNotPossibleReason.USER_IS_BANNED)) {
+        SignInExceptionReason reason = exception.getSignInExceptionReason();
+        if (reason.equals(SignInExceptionReason.USER_IS_BANNED)) {
             return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage(), exception.getBannedUserData()), reason.getHttpStatus());
         } else {
             return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ActivateAccountException.class)
     public ResponseEntity<ErrorResponse> handleActivateAccountExceptions(ActivateAccountException exception) {
-        AccountActivationNotPossibleReason reason = exception.getAccountActivationNotPossibleReason();
+        AccountActivationExceptionReason reason = exception.getAccountActivationExceptionReason();
         return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
     }
 

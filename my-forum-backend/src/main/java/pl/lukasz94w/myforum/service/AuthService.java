@@ -10,10 +10,10 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.lukasz94w.myforum.exception.reason.AccountActivationNotPossibleReason;
+import pl.lukasz94w.myforum.exception.reason.AccountActivationExceptionReason;
 import pl.lukasz94w.myforum.exception.reason.ChangePasswordViaEmailLinkExceptionReason;
 import pl.lukasz94w.myforum.exception.exception.*;
-import pl.lukasz94w.myforum.exception.reason.SignInNotPossibleReason;
+import pl.lukasz94w.myforum.exception.reason.SignInExceptionReason;
 import pl.lukasz94w.myforum.exception.reason.SignUpExceptionReason;
 import pl.lukasz94w.myforum.model.ActivateToken;
 import pl.lukasz94w.myforum.model.PasswordToken;
@@ -90,14 +90,14 @@ public class AuthService {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         } catch (DisabledException exception) {
-            throw new SignInException(SignInNotPossibleReason.ACCOUNT_NOT_ACTIVATED);
+            throw new SignInException(SignInExceptionReason.ACCOUNT_NOT_ACTIVATED);
         } catch (LockedException exception) {
             Map<String, Object> bannedUserData = new HashMap<>();
             bannedUserData.put("userName", signInRequest.getUsername());
             bannedUserData.put("dateOfBan", userRepository.findByName(signInRequest.getUsername()).getBan().getDateAndTimeOfBan().atZone(ZoneId.systemDefault()).toEpochSecond());
-            throw new SignInException(SignInNotPossibleReason.USER_IS_BANNED, bannedUserData);
+            throw new SignInException(SignInExceptionReason.USER_IS_BANNED, bannedUserData);
         } catch (BadCredentialsException exception) {
-            throw new SignInException(SignInNotPossibleReason.BAD_CREDENTIALS);
+            throw new SignInException(SignInExceptionReason.BAD_CREDENTIALS);
         }
 
         User signedInUser = userRepository.findByName(signInRequest.getUsername());
@@ -171,16 +171,16 @@ public class AuthService {
         ActivateToken activateToken = activateTokenRepository.findByToken(activationToken);
 
         if (activateToken == null) {
-            throw new ActivateAccountException(AccountActivationNotPossibleReason.TOKEN_NOT_FOUND);
+            throw new ActivateAccountException(AccountActivationExceptionReason.TOKEN_NOT_FOUND);
         }
 
         User user = activateToken.getUser();
         if (user.isActivated()) {
-            throw new ActivateAccountException(AccountActivationNotPossibleReason.ACCOUNT_ALREADY_ACTIVATED);
+            throw new ActivateAccountException(AccountActivationExceptionReason.ACCOUNT_ALREADY_ACTIVATED);
         }
 
         if (activateToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new ActivateAccountException(AccountActivationNotPossibleReason.TOKEN_EXPIRED);
+            throw new ActivateAccountException(AccountActivationExceptionReason.TOKEN_EXPIRED);
         }
 
         user.setActivated(true);
