@@ -56,7 +56,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/topic/**",
                         "/post/**",
                         "/user/**",
-                        "/console/**",
                         "/ban/checkBanStatus/**",
                         "/listener-for-messages-from-admin-actions/**").permitAll()
                 .and()
@@ -64,13 +63,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .frameOptions().sameOrigin()
                 .and()
                 .authorizeRequests()
-
                 .anyRequest().authenticated().and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        http.headers().frameOptions().disable(); // H2 database
     }
 }
