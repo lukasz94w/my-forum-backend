@@ -47,13 +47,10 @@ public class TopicService {
 
     public long createTopic(NewTopicContent newTopicContent) {
         User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
-
         Category topicCategory = getCategoryIfExistOrThrowException(newTopicContent.getCategory());
-
-        Topic newTopic = this.topicRepository.save(new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory));
-
+        Topic newTopic = topicRepository.save(new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory));
         Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), 1, newTopic, authenticatedUser);
-        this.postRepository.save(firstPostUnderNewTopic);
+        postRepository.save(firstPostUnderNewTopic);
 
         return newTopic.getId();
     }
