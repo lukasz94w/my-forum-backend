@@ -12,7 +12,7 @@ This repository is the backend part of the internet forum project. Its frontend 
 - get pageable posts of certain topic at post/findPageablePostsByTopicId,
 - search in posts at post/searchInPosts,
 - get topic by id at topic/getTopicById/{id},
-- get pageable topics by category at topic/findPageableTopicsInCategory
+- get pageable topics by category at topic/findPageableTopicsInCategory,
 - count topics and posts by category at topic/countTopicsAndPostsByCategory,
 - search in topics at topic/searchInTopicTitles,
 - get certain user data at user/getUserInfo/{userName},
@@ -33,3 +33,9 @@ This repository is the backend part of the internet forum project. Its frontend 
 - open/close topic at topic/changeStatus,
 - delete certain topic at topic/deleteTopicById/{id},
 - get list of pageable users at user/findPageableUsers/{page}. 
+
+## Websocket:
+### Stomp endpoint for authorized user (ROLE_USER):
+- listening messages from admin at /listener-for-messages-from-admin-actions.
+### Message broker for admin (ROLE_ADMIN):
+- for push messages to users at topic/from-admin.
