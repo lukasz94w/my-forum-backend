@@ -1,6 +1,18 @@
 # my-forum-backend
 This repository is the backend part of the internet forum project. Its frontend part is available at: https://github.com/lukasz94w/my-forum-frontend.
 
+The following technologies were used in the project:
+- Spring Boot,
+- Spring Security,
+- Spring Data JPA,
+- Spring WebSocket,
+- Spring Messaging,
+- Hibernate,
+- Java,
+- PostgreSQL,
+- JWT,
+- Maven,
+- Lombok.
 ## Available endpoints
 ### For everyone:
 - creating new account at auth/signUp,
@@ -31,17 +43,17 @@ This repository is the backend part of the internet forum project. Its frontend 
 - unban user at ban/unBanUser,
 - hide (moderate) certain post at post/changeStatus,
 - open/close topic at topic/changeStatus,
-- delete certain topic at topic/deleteTopicById/{id},
+- delete topic at topic/deleteTopicById/{id},
 - get list of pageable users at user/findPageableUsers/{page}. 
 
 ## Websocket
 ### Stomp endpoint for authorized user (ROLE_USER):
-- listening messages from admin at /listener-for-messages-from-admin-actions.
+- listening messages from admin (name of banned user) at /listener-for-messages-from-admin-actions.
 ### Message broker for admin (ROLE_ADMIN):
 - for push messages to users at topic/from-admin.
 
 ## Configuration
-Default configuration is presented below:
+After startup, the application is available on port 8080 (localhost:8080). Default configuration is presented below:
 ```
 #jwt authorization token attributes (access token validity - 1 hour, refresh token validity - 24 hours)
 pl.lukasz94w.jwtSecret = lukasz94wsecretkey
@@ -87,3 +99,11 @@ spring.jpa.properties.hibernate.hbm2ddl.import_files_sql_extractor = org.hiberna
 #show hibernate commands
 spring.jpa.show-sql = true
 ```
+
+## Impromevents
+It is possible to add new functionalities / improvements to the application, such as:
+- add endpoint which allows to delete account,
+- secure websocket stomp endpoint /listener-for-messages-from-admin-actions, currently it is not protected in any way and theoretically anyone can connect to it and listen to messages (use JWT for authorization?),
+- instead of global stomp endpoint, use queues to be able to pass information about the ban through a private channel to a specific user,
+- implement a chat function (using WebSocket) that enables sending messages between users,
+- reduce the number of operations while searching for data (TopicServiceUtil and PostServiceUtil class) by adding additional fields in entity objects, e.g. the date of the last activity in the topic.
