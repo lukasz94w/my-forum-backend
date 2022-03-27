@@ -1,7 +1,7 @@
 # my-forum-backend
 This repository is the backend part of the internet forum project. Its frontend part is available at: https://github.com/lukasz94w/my-forum-frontend.
 
-## Available endpoints:
+## Available endpoints
 ### For everyone:
 - creating new account at auth/signUp,
 - account login at auth/signIn,
@@ -17,7 +17,7 @@ This repository is the backend part of the internet forum project. Its frontend 
 - search in topics at topic/searchInTopicTitles,
 - get certain user data at user/getUserInfo/{userName},
 - get pageable posts by user at user/findPageablePostsByUser,
-- get pageable topics by user at user/findPageableTopicByUser.
+- get pageable topics by user at user/findPageableTopicsByUser.
 
 ### Only for authorized user (ROLE_USER):
 - creating new post at post/addPost,
@@ -34,8 +34,56 @@ This repository is the backend part of the internet forum project. Its frontend 
 - delete certain topic at topic/deleteTopicById/{id},
 - get list of pageable users at user/findPageableUsers/{page}. 
 
-## Websocket:
+## Websocket
 ### Stomp endpoint for authorized user (ROLE_USER):
 - listening messages from admin at /listener-for-messages-from-admin-actions.
 ### Message broker for admin (ROLE_ADMIN):
 - for push messages to users at topic/from-admin.
+
+## Configuration
+Default configuration is presented below:
+```
+#jwt authorization token attributes (access token validity - 1 hour, refresh token validity - 24 hours)
+pl.lukasz94w.jwtSecret = lukasz94wsecretkey
+pl.lukasz94w.jwtAccessTokenExpirationTimeInMs = 3600000
+pl.lukasz94w.jwtRefreshTokenExpirationTimeInMs = 86400000
+
+#server address
+pl.lukasz94w.serverAddress = http://localhost:4200
+
+#number of pageable items
+pl.lukasz94w.pageableItemsNumber = 10
+
+#maximum image upload size
+#in the frontend, the limit set when loading the file is 200KB, but the algorithms
+#can increase the size, so here with a certain margin the limit was set to 350KB
+spring.servlet.multipart.max-file-size = 350KB
+spring.servlet.multipart.max-request-size = 350KB
+
+#mail client settings
+spring.mail.host = smtp.gmail.com
+spring.mail.port = 587
+spring.mail.username = myforumspringangular@gmail.com
+spring.mail.password = mycust0mp4ssword
+spring.mail.properties.mail.smtp.auth = true
+spring.mail.properties.mail.smtp.starttls.enable = true
+spring.mail.properties.mail.smtp.starttls.required = true
+spring.mail.properties.mail.smtp.ssl.trust = smtp.gmail.com
+spring.mail.properties.mail.smtp.connectiontimeout = 5000
+spring.mail.properties.mail.smtp.timeout = 5000
+spring.mail.properties.mail.smtp.writetimeout = 5000
+
+#postgresql settings
+spring.datasource.url = jdbc:postgresql://localhost:5432/postgres
+spring.datasource.username = postgres
+spring.datasource.password = 123
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation = true
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto = create-drop
+spring.sql.init.mode = always
+spring.jpa.defer-datasource-initialization = true
+spring.jpa.properties.hibernate.hbm2ddl.import_files_sql_extractor = org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
+
+#show hibernate commands
+spring.jpa.show-sql = true
+```
