@@ -9,6 +9,8 @@ The following technologies were used in the project:
 - Spring Messaging,
 - Hibernate,
 - Java,
+- JUnit 5,
+- Mockito,
 - PostgreSQL,
 - JWT,
 - Maven,
@@ -106,4 +108,5 @@ It is possible to add new functionalities / improvements to the application, suc
 - secure websocket stomp endpoint /listener-for-messages-from-admin-actions, currently it is not protected in any way and theoretically anyone can connect to it and listen to messages (use JWT for authorization?),
 - instead of global stomp endpoint, use queues to be able to pass information about the ban through a private channel to a specific user,
 - implement a chat function (using WebSocket) that enables sending messages between users,
-- reduce the number of operations while searching for data (TopicServiceUtil and PostServiceUtil class) by adding additional fields in entity objects, e.g. the date of the last activity in the topic.
+- reduce the number of operations while searching for data (TopicServiceUtil and PostServiceUtil class) by adding additional fields in entity objects, e.g. the date of the last activity in the topic,
+- write more tests, e.g. checking password reset via email, access and refresh token duration or validating of incoming data in requests.
