@@ -1,7 +1,7 @@
 package pl.lukasz94w.myforum.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.FutureOrPresent;
@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 
 @Getter
-@Setter
+@AllArgsConstructor
 public final class BanRequest {
 
     @FutureOrPresent

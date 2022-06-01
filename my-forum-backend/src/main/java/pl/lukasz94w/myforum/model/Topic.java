@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @Getter
-@Setter //TODO finalnie dac setter tylko do czasu aktualizacji...
 @RequiredArgsConstructor
 @Table(name = "topics")
 public final class Topic {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter
     private Long id;
 
     @NonNull
@@ -25,7 +25,7 @@ public final class Topic {
     @JoinColumn(name = "user_id")
     private User user;
 
-    //with this addNew post doesnt work (fetch = FetchType.LAZY)
+    // with this addNew post doesn't work (fetch = FetchType.LAZY)
     @OneToOne
     @NonNull
     @JoinColumn(name = "category_id")
@@ -33,7 +33,9 @@ public final class Topic {
 
     private final LocalDateTime dateTime = LocalDateTime.now();
 
+    @Setter
     private LocalDateTime timeOfActualization = dateTime;
 
+    @Setter
     private boolean closed = false;
 }

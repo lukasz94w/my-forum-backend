@@ -21,10 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByEmail(String email);
 
-    @Override
-    @Query("SELECT DISTINCT u FROM User u JOIN FETCH u.roles")
-    List<User> findAll();
-
     Optional<User> findByEmail(String email);
 
     @Query(value =

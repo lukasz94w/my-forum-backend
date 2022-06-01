@@ -52,31 +52,33 @@ public final class UserService {
     @Value("${pl.lukasz94w.pageableItemsNumber}")
     private int pageableUsersNumber;
 
-    public UserDto getUserInfo(String username) {
-        return mapperDto.mapToUserDto2(userRepository.findUserByName(username).orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.USER_DOESNT_EXIST)));
+    public UserDto getUserInfo(String userName) {
+        return mapperDto.mapToUserDto2(checkIfUserExist(userName));
     }
 
     public Map<String, byte[]> getProfilePic() {
-        User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
+        User authenticatedUser = checkIfUserExist(authorizedUserProvider.getAuthorizedUserName());
         Optional<ProfilePic> profilePic = Optional.ofNullable(authenticatedUser.getProfilePic());
         return profilePic.map(pic -> Collections.singletonMap("rawData", pic.getData())).orElseGet(() -> Collections.singletonMap("rawData", null));
     }
 
     public SuccessResponse changeProfilePic(MultipartFile image) {
-        User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
+        User authenticatedUser = checkIfUserExist(authorizedUserProvider.getAuthorizedUserName());
+        ProfilePic profilePic;
 
         try {
-            ProfilePic profilePic = profilePicRepository.save(new ProfilePic(authenticatedUser.getId(), image.getBytes()));
-            authenticatedUser.setProfilePic(profilePic);
-            userRepository.save(authenticatedUser);
-            return new SuccessResponse("Image changed");
+            profilePic = profilePicRepository.save(new ProfilePic(authenticatedUser.getId(), image.getBytes()));
         } catch (IOException exception) {
             throw new ProfilePicUploadException("Error during changing. Try again later");
         }
+
+        authenticatedUser.setProfilePic(profilePic);
+        userRepository.save(authenticatedUser);
+        return new SuccessResponse("Image changed");
     }
 
     public SuccessResponse changePasswordThroughUserSettings(ChangePasswordViaUserSettings request) {
-        User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
+        User authenticatedUser = checkIfUserExist(authorizedUserProvider.getAuthorizedUserName());
 
         if (passwordEncoder.matches(request.getCurrentPassword(), authenticatedUser.getPassword())) {
             authenticatedUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -110,17 +112,17 @@ public final class UserService {
         Pageable paging = PageRequest.of(page, pageableUsersNumber, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findByUser(user, paging);
 
-        List<Topic> listOf10PageableTopics = pageableTopics.getContent();
-        Collection<TopicDto2> pageableTopicsDto = listOf10PageableTopics.stream()
+        List<Topic> listOfPageableTopics = pageableTopics.getContent();
+        Collection<TopicDto2> pageableTopicsDto = listOfPageableTopics.stream()
                 .map(mapperDto::mapToTopicDto2)
                 .collect(Collectors.toList());
 
         List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOf10PageableTopics, foundedNumberOfPostsInPageableTopics);
+        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOfPageableTopics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOf10PageableTopics, listOfLatestPosts);
+        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOfPageableTopics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);
@@ -136,17 +138,17 @@ public final class UserService {
     public Map<String, Object> findPageableUsers(int page) {
         Pageable paging = PageRequest.of(page, pageableUsersNumber, Sort.by("registered").ascending());
         Page<User> pageableUsers = userRepository.findAll(paging);
-        List<User> listOf10PageableUsers = pageableUsers.getContent();
+        List<User> listOfPageableUsers = pageableUsers.getContent();
 
-        Collection<UserDto> pageableUsersDto = listOf10PageableUsers.stream()
+        Collection<UserDto> pageableUsersDto = listOfPageableUsers.stream()
                 .map(mapperDto::mapToUserDto)
                 .collect(Collectors.toList());
 
         List<Long> listOfUserIds = pageableUsers.stream().map(User::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableUsers = userRepository.countPostsInPageableUsers(listOfUserIds);
         List<Object[]> foundedNumberOfTopicsInPageableUsers = userRepository.countTopicsInPageableUsers(listOfUserIds);
-        List<Long> numberOfPostsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOf10PageableUsers, foundedNumberOfPostsInPageableUsers);
-        List<Long> numberOfTopicsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOf10PageableUsers, foundedNumberOfTopicsInPageableUsers);
+        List<Long> numberOfPostsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOfPageableUsers, foundedNumberOfPostsInPageableUsers);
+        List<Long> numberOfTopicsInPageableUsers = userServiceUtil.prepareNumberOfEntriesInPageableUsers(listOfPageableUsers, foundedNumberOfTopicsInPageableUsers);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableUsers", pageableUsersDto);
@@ -157,5 +159,10 @@ public final class UserService {
         response.put("totalPages", pageableUsers.getTotalPages());
 
         return response;
+    }
+
+    private User checkIfUserExist(String userName) {
+        return userRepository.findUserByName(userName)
+                .orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.USER_DOESNT_EXIST));
     }
 }

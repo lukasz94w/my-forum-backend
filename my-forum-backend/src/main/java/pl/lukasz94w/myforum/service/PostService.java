@@ -61,7 +61,8 @@ public class PostService {
     }
 
     public void changeStatus(PostStatus postStatus) {
-        Post post = postRepository.findPostById(postStatus.getPostId());
+        Post post = postRepository.findById(postStatus.getPostId())
+                .orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.POST_DOESNT_EXIST));
         post.setModerated(postStatus.isModerated());
         postRepository.save(post);
     }

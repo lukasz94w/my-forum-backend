@@ -16,8 +16,6 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByTopicId(Long id, Pageable pageable);
 
-    Post findPostById(final Long id);
-
     @Query(value =
             "SELECT COUNT (post.topic.category), MIN(post.topic.category) " +
                     "FROM Post post " +
