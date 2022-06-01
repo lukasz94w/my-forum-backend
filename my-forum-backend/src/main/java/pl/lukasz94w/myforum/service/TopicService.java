@@ -47,7 +47,7 @@ public class TopicService {
 
     public long createTopic(NewTopicContent newTopicContent) {
         User authenticatedUser = userRepository.findByName(authorizedUserProvider.getAuthorizedUserName());
-        Category topicCategory = getCategoryIfExistOrThrowException(newTopicContent.getCategory());
+        Category topicCategory = checkInfCategoryExist(newTopicContent.getCategory());
         Topic newTopic = topicRepository.save(new Topic(newTopicContent.getTitle(), authenticatedUser, topicCategory));
         Post firstPostUnderNewTopic = new Post(newTopicContent.getContent(), 1, newTopic, authenticatedUser);
         postRepository.save(firstPostUnderNewTopic);
@@ -56,23 +56,21 @@ public class TopicService {
     }
 
     public void changeStatus(TopicStatus topicStatus) {
-        Topic topic = topicRepository.findTopicById(topicStatus.getTopicId());
+        Topic topic = checkIfTopicExist(topicStatus.getTopicId());
         topic.setClosed(topicStatus.isClosed());
         topicRepository.save(topic);
     }
 
     public void deleteTopicById(Long id) {
-        topicRepository.deleteById(id);
+        topicRepository.deleteById(checkIfTopicExist(id).getId());
     }
 
     public TopicDto3 getTopicById(Long id) {
-        return mapperDto.mapToTopicDto3(topicRepository
-                .findById(id)
-                .orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.TOPIC_DOESNT_EXIST)));
+        return mapperDto.mapToTopicDto3(checkIfTopicExist(id));
     }
 
     public Map<String, Object> findPageableTopicsInCategory(int page, String category) {
-        Category chosenCategory = getCategoryIfExistOrThrowException(category);
+        Category chosenCategory = checkInfCategoryExist(category);
 
         Pageable paging = PageRequest.of(page, pageableTopicsNumber, Sort.by("timeOfActualization").descending());
         Page<Topic> pageableTopics = topicRepository.findTopicsByCategory(chosenCategory, paging);
@@ -126,17 +124,17 @@ public class TopicService {
     }
 
     private Map<String, Object> buildResponse(Page<Topic> pageableTopics) {
-        List<Topic> listOf10PageableTopics = pageableTopics.getContent();
-        Collection<TopicDto> pageableTopicsDto = listOf10PageableTopics.stream()
+        List<Topic> listOfPageableTopics = pageableTopics.getContent();
+        Collection<TopicDto> pageableTopicsDto = listOfPageableTopics.stream()
                 .map(mapperDto::mapToTopicDto2)
                 .collect(Collectors.toList());
 
         List<Long> listOfTopicIds = pageableTopics.stream().map(Topic::getId).collect(Collectors.toList());
         List<Object[]> foundedNumberOfPostsInPageableTopics = postRepository.countPostsInPageableTopics(listOfTopicIds);
-        List<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOf10PageableTopics, foundedNumberOfPostsInPageableTopics);
+        Collection<Long> numberOfAnswersInPageableTopics = topicServiceUtil.prepareNumberOfAnswersInPageableTopics(listOfPageableTopics, foundedNumberOfPostsInPageableTopics);
 
         List<Post> listOfLatestPosts = postRepository.findLatestPostsInEachOfLatestTopics(listOfTopicIds);
-        List<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOf10PageableTopics, listOfLatestPosts);
+        Collection<LastActivityInPageableTopicDto> lastPageableTopicActivities = topicServiceUtil.prepareLastActivitiesInPageableTopics(listOfPageableTopics, listOfLatestPosts);
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageableTopics", pageableTopicsDto);
@@ -149,7 +147,13 @@ public class TopicService {
         return response;
     }
 
-    private Category getCategoryIfExistOrThrowException(String category) {
+    private Topic checkIfTopicExist(Long topicId) {
+        return topicRepository
+                .findById(topicId)
+                .orElseThrow(() -> new ForumItemNotFoundException(ForumItemNotFoundExceptionReason.TOPIC_DOESNT_EXIST));
+    }
+
+    private Category checkInfCategoryExist(String category) {
         EnumeratedCategory enumeratedCategory = Arrays.stream(EnumeratedCategory.values())
                 .filter(e -> e.name().equals(category.toUpperCase()))
                 .findFirst()

@@ -16,8 +16,6 @@ import java.util.Optional;
 public interface TopicRepository extends JpaRepository<Topic, Long> {
     Optional<Topic> findById(final Long id);
 
-    Topic findTopicById(Long id);
-
     Page<Topic> findTopicsByCategory(Category category, Pageable pageable);
 
     @Query(value = "SELECT COUNT(topic.category), MIN(topic.category) FROM Topic topic GROUP BY topic.category")
