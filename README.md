@@ -110,3 +110,16 @@ It is possible to add new functionalities / improvements to the application, suc
 - implement a chat function (using WebSocket) that enables sending messages between users,
 - reduce the number of operations while searching for data (TopicServiceUtil and PostServiceUtil class) by adding additional fields in entity objects, e.g. the date of the last activity in the topic,
 - write more tests, e.g. checking password reset via email, access and refresh token duration or validating of incoming data in requests.
+
+## Docker
+To run container which consists image of Spring Boot application and PostgreSQL use:
+```
+docker-compose up -d
+```
+
+Image of Spring Boot application is downloaded from docker-hub repository (https://hub.docker.com/repository/docker/lukasz94w/my-forum-backend). It is possible to create your own image using existing Dockerfile by running command:
+```
+docker build -t my-forum-backend .
+```
+
+
