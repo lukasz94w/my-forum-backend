@@ -94,6 +94,9 @@
     </dependencies>
 
     <build>
+        <finalName>
+            my-forum-backend
+        </finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

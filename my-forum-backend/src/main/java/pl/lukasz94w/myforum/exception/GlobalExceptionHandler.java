@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import pl.lukasz94w.myforum.exception.reason.*;
 import pl.lukasz94w.myforum.exception.exception.*;
+import pl.lukasz94w.myforum.response.message.BanResponse;
 import pl.lukasz94w.myforum.response.message.ErrorResponse;
 
 @RestControllerAdvice
@@ -44,7 +45,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleSignInExceptions(SignInException exception) {
         SignInExceptionReason reason = exception.getSignInExceptionReason();
         if (reason.equals(SignInExceptionReason.USER_IS_BANNED)) {
-            return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage(), exception.getBannedUserData()), reason.getHttpStatus());
+            return new ResponseEntity<>(new BanResponse(reason.getExceptionMessage(), exception.getBannedUserData()), reason.getHttpStatus());
         } else {
             return new ResponseEntity<>(new ErrorResponse(reason.getExceptionMessage()), reason.getHttpStatus());
         }
